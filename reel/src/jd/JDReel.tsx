@@ -1,5 +1,6 @@
 import React from "react";
-import { AbsoluteFill } from "remotion";
+import { AbsoluteFill, staticFile } from "remotion";
+import { Audio } from "@remotion/media";
 import { TransitionSeries, linearTiming } from "@remotion/transitions";
 import { slide } from "@remotion/transitions/slide";
 import { wipe } from "@remotion/transitions/wipe";
@@ -19,6 +20,7 @@ export const JD_TOTAL =
 
 export const JDReel: React.FC = () => (
   <AbsoluteFill style={{ backgroundColor: "#000" }}>
+    <Audio src={staticFile("music.mp3")} volume={1} />
     <TransitionSeries>
       <TransitionSeries.Sequence name="Hook" durationInFrames={D.hook}>
         <JDHook />
