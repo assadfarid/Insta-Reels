@@ -2,3 +2,5 @@ node_modules
 out
 audio/music_raw.wav
 audio/bed_raw.wav
+public/avatar/stand-in.jpg
+avatar/props.json

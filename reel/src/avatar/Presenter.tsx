@@ -1,10 +1,23 @@
 import React from "react";
-import { AbsoluteFill, Interactive, staticFile } from "remotion";
+import {
+  AbsoluteFill,
+  Easing,
+  Img,
+  interpolate,
+  staticFile,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
 import { Video } from "@remotion/media";
-import { J, head, monoJ } from "../jd/theme";
 
-// Drop the generated avatar clip at public/avatar/presenter.mp4 and pass presenterSrc="avatar/presenter.mp4".
-export const Presenter: React.FC<{ src: string | null }> = ({ src }) => {
+// 1) presenterSrc: the generated talking-avatar clip (public/avatar/presenter.mp4), full frame.
+// 2) standInSrc: a still of the presenter with slow "breathing" camera motion (preview only, no lip-sync).
+export const Presenter: React.FC<{
+  src: string | null;
+  standIn: string | null;
+}> = ({ src, standIn }) => {
+  const frame = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
   if (src) {
     return (
       <AbsoluteFill>
@@ -16,64 +29,58 @@ export const Presenter: React.FC<{ src: string | null }> = ({ src }) => {
       </AbsoluteFill>
     );
   }
+  if (standIn) {
+    const push = interpolate(frame, [0, durationInFrames], [1.0, 1.06], {
+      easing: Easing.inOut(Easing.quad),
+    });
+    const breathe = Math.sin(frame / 26) * 0.006;
+    return (
+      <AbsoluteFill style={{ backgroundColor: "#2b2724" }}>
+        <Img
+          src={staticFile(standIn)}
+          style={{
+            position: "absolute",
+            left: -120,
+            top: -60,
+            width: 1320,
+            height: 2200,
+            objectFit: "cover",
+            filter: "blur(40px) brightness(0.75) saturate(1.1)",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 330,
+            width: 1080,
+            height: 1919,
+            scale: push + breathe,
+            transformOrigin: "50% 28%",
+            translate: `${Math.sin(frame / 70) * 6}px 0px`,
+            maskImage: "linear-gradient(180deg, transparent 0px, #000 260px)",
+            WebkitMaskImage:
+              "linear-gradient(180deg, transparent 0px, #000 260px)",
+          }}
+        >
+          <Img
+            src={staticFile(standIn)}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              filter: "contrast(1.05) saturate(1.05)",
+            }}
+          />
+        </div>
+      </AbsoluteFill>
+    );
+  }
   return (
     <AbsoluteFill
       style={{
-        background:
-          "linear-gradient(180deg, #D9CDBE 0%, #BFB1A0 55%, #8C7F70 100%)",
+        background: "linear-gradient(180deg, #D9CDBE 0%, #8C7F70 100%)",
       }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: 360,
-          backgroundColor: "#7A5C3E",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          left: 290,
-          top: 700,
-          width: 500,
-          height: 640,
-          borderRadius: "250px 250px 60px 60px",
-          backgroundColor: "#00000022",
-          border: "4px dashed #00000044",
-        }}
-      />
-      <Interactive.Div
-        name="Placeholder label"
-        style={{
-          position: "absolute",
-          left: 0,
-          width: 1080,
-          top: 960,
-          textAlign: "center",
-          fontFamily: head,
-          fontWeight: 800,
-          fontSize: 44,
-          letterSpacing: 4,
-          color: J.charcoal,
-          opacity: 0.55,
-        }}
-      >
-        PRESENTER CLIP GOES HERE
-        <div
-          style={{
-            fontFamily: monoJ,
-            fontWeight: 400,
-            fontSize: 30,
-            letterSpacing: 2,
-            marginTop: 14,
-          }}
-        >
-          public/avatar/presenter.mp4
-        </div>
-      </Interactive.Div>
-    </AbsoluteFill>
+    />
   );
 };

@@ -1,11 +1,10 @@
 import React from "react";
 import { Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
-import { J, head, serifI } from "../jd/theme";
 import { LINES } from "./script";
+import { sans, serif } from "./fonts";
 
 type Chunk = { words: string[]; start: number; end: number; keys: string[] };
 
-// Split each line into 1-3 word chunks, timed proportionally to character count.
 const chunks: Chunk[] = LINES.flatMap((line) => {
   const words = line.text.split(" ");
   const groups: string[][] = [];
@@ -38,29 +37,33 @@ export const Captions: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const t = frame / fps;
-  const i = chunks.findIndex((c) => t >= c.start && t < c.end + 0.12);
+  const i = chunks.findIndex((c) => t >= c.start && t < c.end + 0.1);
   if (i < 0) return null;
   const c = chunks[i];
-  const p = interpolate(t, [c.start, c.start + 0.18], [0, 1], {
+  const p = interpolate(t, [c.start, c.start + 0.22], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: ease,
+  });
+  const out = interpolate(t, [c.end - 0.04, c.end + 0.1], [1, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
   });
   return (
     <div
       style={{
         position: "absolute",
-        left: 60,
-        width: 960,
-        top: 1360,
+        left: 72,
+        width: 936,
+        top: 1440,
         display: "flex",
-        justifyContent: "center",
         alignItems: "baseline",
         flexWrap: "wrap",
-        gap: "0 26px",
-        opacity: p,
-        scale: 0.9 + 0.1 * p,
-        textShadow: "0 6px 30px #00000088",
+        gap: "0 24px",
+        opacity: p * out,
+        translate: `0px ${(1 - p) * 28}px`,
+        filter: `blur(${(1 - p) * 10}px)`,
+        textShadow: "0 4px 28px #00000066, 0 1px 2px #00000040",
       }}
     >
       {c.words.map((w, k) => {
@@ -69,11 +72,12 @@ export const Captions: React.FC = () => {
           <span
             key={k}
             style={{
-              fontFamily: serifI,
+              fontFamily: serif,
               fontStyle: "italic",
               fontSize: 150,
-              lineHeight: 1,
-              color: J.cream,
+              lineHeight: 1.05,
+              color: "#fff",
+              letterSpacing: -2,
             }}
           >
             {w.replace(/[.,?:]$/, "").toLowerCase()}
@@ -82,11 +86,12 @@ export const Captions: React.FC = () => {
           <span
             key={k}
             style={{
-              fontFamily: head,
-              fontWeight: 800,
-              fontSize: 84,
+              fontFamily: sans,
+              fontWeight: 600,
+              fontSize: 80,
               lineHeight: 1.15,
               color: "#fff",
+              letterSpacing: -2,
             }}
           >
             {w}

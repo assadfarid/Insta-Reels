@@ -7,86 +7,161 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
-import { J, head, monoJ } from "../jd/theme";
 import { LINES } from "./script";
+import { sans, serif } from "./fonts";
 
 const ease = Easing.bezier(0.16, 1, 0.3, 1);
-const shadow = "0 30px 80px #00000066";
-
-const Card: React.FC<{
-  style: React.CSSProperties;
-  children: React.ReactNode;
-}> = ({ style, children }) => (
-  <div
-    style={{
-      position: "absolute",
-      borderRadius: 28,
-      overflow: "hidden",
-      backgroundColor: J.cream,
-      boxShadow: shadow,
-      border: "6px solid #ffffffDD",
-      ...style,
-    }}
-  >
-    {children}
-  </div>
-);
-
-const Chip: React.FC<{ text: string; style: React.CSSProperties }> = ({
-  text,
-  style,
-}) => (
-  <div
-    style={{
-      position: "absolute",
-      padding: "12px 22px",
-      backgroundColor: J.terra,
-      color: J.cream,
-      fontFamily: head,
-      fontWeight: 800,
-      fontSize: 30,
-      letterSpacing: 1,
-      whiteSpace: "nowrap",
-      ...style,
-    }}
-  >
-    {text}
-  </div>
-);
-
 const photo = (name: string) => staticFile(`jd/${name}`);
 
-const Phone: React.FC<{ frame: number }> = ({ frame }) => {
-  const y = interpolate(
-    frame,
-    [0, 40, 80, 120, 160],
-    [0, 2500, 5200, 10300, 12900],
-    { extrapolateRight: "clamp", easing: Easing.bezier(0.65, 0, 0.35, 1) },
-  );
-  const W = 330;
+// A UI card that blurs/scales in, then floats gently.
+const FloatCard: React.FC<{
+  f: number;
+  delay?: number;
+  seed?: number;
+  rot?: number;
+  style: React.CSSProperties;
+  children: React.ReactNode;
+}> = ({ f, delay = 0, seed = 0, rot = 0, style, children }) => {
+  const p = interpolate(f, [delay, delay + 20], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: ease,
+  });
   return (
     <div
       style={{
         position: "absolute",
-        left: 375,
-        top: 120,
-        width: W + 20,
-        height: 700,
-        borderRadius: 60,
+        borderRadius: 26,
+        overflow: "hidden",
+        backgroundColor: "#F6F3EE",
+        boxShadow:
+          "0 1px 2px #0000002e, 0 10px 24px #00000030, 0 40px 90px #0000004d",
+        outline: "1.5px solid #ffffffb3",
+        opacity: p,
+        filter: `blur(${(1 - p) * 14}px)`,
+        scale: 0.9 + 0.1 * p,
+        translate: `0px ${(1 - p) * 70 + Math.sin(f / 22 + seed) * 7}px`,
+        rotate: `${rot + Math.sin(f / 34 + seed) * 0.8}deg`,
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+};
+
+// Hand-drawn style annotation: serif italic label plus an arrow that draws itself.
+const Note: React.FC<{
+  f: number;
+  delay: number;
+  text: string;
+  x: number;
+  y: number;
+  flip?: boolean;
+}> = ({ f, delay, text, x, y, flip }) => {
+  const p = interpolate(f, [delay, delay + 18], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: ease,
+  });
+  const d = interpolate(f, [delay + 6, delay + 30], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: Easing.out(Easing.cubic),
+  });
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: x,
+        top: y,
+        opacity: p,
+        translate: `0px ${(1 - p) * 14}px`,
+      }}
+    >
+      <div
+        style={{
+          fontFamily: serif,
+          fontStyle: "italic",
+          fontSize: 58,
+          color: "#fff",
+          textShadow: "0 3px 18px #00000088",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {text}
+      </div>
+      <svg
+        width="120"
+        height="90"
+        viewBox="0 0 120 90"
+        style={{
+          position: "absolute",
+          left: flip ? -90 : 20,
+          top: 56,
+          scale: flip ? "-1 1" : "1 1",
+        }}
+        fill="none"
+      >
+        <path
+          d="M8 6 C 50 0, 96 26, 100 74"
+          stroke="#fff"
+          strokeWidth="3.5"
+          strokeLinecap="round"
+          pathLength={1}
+          strokeDasharray={1}
+          strokeDashoffset={1 - d}
+        />
+        <path
+          d="M88 62 L100 76 L112 60"
+          stroke="#fff"
+          strokeWidth="3.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity={d > 0.9 ? 1 : 0}
+        />
+      </svg>
+    </div>
+  );
+};
+
+const Phone: React.FC<{ f: number }> = ({ f }) => {
+  const y = interpolate(
+    f,
+    [8, 48, 88, 128, 168],
+    [0, 2500, 5200, 10300, 12900],
+    {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+      easing: Easing.bezier(0.65, 0, 0.35, 1),
+    },
+  );
+  const W = 320;
+  return (
+    <FloatCard
+      f={f}
+      seed={1.3}
+      rot={-3}
+      style={{
+        left: 380,
+        top: 110,
+        width: W + 22,
+        height: 640,
+        borderRadius: 56,
         backgroundColor: "#0A0B0D",
-        boxShadow: shadow,
+        outline: "2px solid #3a3e45",
       }}
     >
       <div
         style={{
           position: "absolute",
-          left: 10,
-          top: 10,
+          left: 11,
+          top: 11,
           width: W,
-          height: 680,
-          borderRadius: 50,
+          height: 618,
+          borderRadius: 46,
           overflow: "hidden",
-          backgroundColor: J.cream,
+          backgroundColor: "#F6F3EE",
         }}
       >
         <Img
@@ -101,14 +176,19 @@ const Phone: React.FC<{ frame: number }> = ({ frame }) => {
           }}
         />
       </div>
-    </div>
+    </FloatCard>
   );
 };
 
 const CARDS: ((f: number) => React.ReactNode)[] = [
-  () => (
+  (f) => (
     <>
-      <Card style={{ left: 90, top: 190, width: 900, height: 430 }}>
+      <FloatCard
+        f={f}
+        seed={0.4}
+        rot={-1.5}
+        style={{ left: 90, top: 150, width: 900, height: 440 }}
+      >
         <Img
           src={photo("jd-premium-hero.webp")}
           style={{
@@ -118,13 +198,18 @@ const CARDS: ((f: number) => React.ReactNode)[] = [
             objectPosition: "35% 50%",
           }}
         />
-      </Card>
-      <Chip text="NEW SITE" style={{ left: 120, top: 220 }} />
+      </FloatCard>
+      <Note f={f} delay={14} text="the result" x={720} y={610} />
     </>
   ),
-  () => (
+  (f) => (
     <>
-      <Card style={{ left: 190, top: 150, width: 700, height: 560 }}>
+      <FloatCard
+        f={f}
+        seed={1.1}
+        rot={1.2}
+        style={{ left: 170, top: 130, width: 740, height: 520 }}
+      >
         <Img
           src={photo("site-hero.png")}
           style={{
@@ -134,117 +219,147 @@ const CARDS: ((f: number) => React.ReactNode)[] = [
             objectPosition: "50% 56%",
           }}
         />
-      </Card>
-      <Chip text="THE CLIENT'S VOICE" style={{ left: 220, top: 640 }} />
+      </FloatCard>
+      <Note f={f} delay={14} text="their voice" x={110} y={640} flip />
     </>
   ),
-  () => (
+  (f) => (
     <>
-      <Card
-        style={{ left: 70, top: 190, width: 300, height: 480, rotate: "-6deg" }}
+      <FloatCard
+        f={f}
+        delay={0}
+        seed={0.2}
+        rot={-6}
+        style={{ left: 60, top: 190, width: 300, height: 470 }}
       >
         <Img
           src={photo("site-top.jpg")}
           style={{ width: 300, height: "auto", translate: "0px -520px" }}
         />
-      </Card>
-      <Card style={{ left: 390, top: 130, width: 300, height: 480, zIndex: 2 }}>
+      </FloatCard>
+      <FloatCard
+        f={f}
+        delay={6}
+        seed={1.7}
+        rot={0}
+        style={{ left: 390, top: 120, width: 300, height: 470, zIndex: 2 }}
+      >
         <Img
           src={photo("site-top.jpg")}
           style={{ width: 300, height: "auto", translate: "0px -1040px" }}
         />
-      </Card>
-      <Card
-        style={{ left: 710, top: 190, width: 300, height: 480, rotate: "6deg" }}
+      </FloatCard>
+      <FloatCard
+        f={f}
+        delay={12}
+        seed={2.6}
+        rot={6}
+        style={{ left: 720, top: 190, width: 300, height: 470 }}
       >
         <Img
           src={photo("jd-premium-p1-1280x1600.webp")}
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
         />
-      </Card>
-      <Chip
-        text="MANIFESTO · PROJECTS · FORM"
-        style={{ left: 150, top: 700 }}
-      />
+      </FloatCard>
+      <Note f={f} delay={22} text="the sections" x={380} y={640} />
     </>
   ),
-  () => (
-    <Card
+  (f) => (
+    <>
+      <FloatCard
+        f={f}
+        seed={0.9}
+        rot={-1}
+        style={{
+          left: 120,
+          top: 150,
+          width: 840,
+          height: 460,
+          backgroundColor: "#1d1f23",
+          outline: "1.5px solid #ffffff22",
+        }}
+      >
+        <div
+          style={{ padding: "40px 48px", fontFamily: sans, color: "#F6F3EE" }}
+        >
+          <div style={{ fontWeight: 700, fontSize: 52, letterSpacing: -1 }}>
+            WordPress · Divi
+          </div>
+          {["Hero", "Projects", "Form"].map((r, i) => (
+            <div
+              key={r}
+              style={{
+                marginTop: 22,
+                fontSize: 40,
+                fontWeight: 500,
+                display: "flex",
+                alignItems: "center",
+                gap: 18,
+                opacity: interpolate(f, [16 + i * 8, 28 + i * 8], [0, 1], {
+                  extrapolateLeft: "clamp",
+                  extrapolateRight: "clamp",
+                }),
+              }}
+            >
+              <span style={{ color: "#F4C9B2" }}>✓</span> {r}{" "}
+              <span style={{ opacity: 0.5 }}>· editable</span>
+            </div>
+          ))}
+        </div>
+      </FloatCard>
+      <Note f={f} delay={34} text="client can edit" x={650} y={620} />
+    </>
+  ),
+  (f) => (
+    <>
+      <Phone f={f} />
+      <Note f={f} delay={16} text="on mobile" x={90} y={330} flip />
+    </>
+  ),
+  (f) => (
+    <FloatCard
+      f={f}
+      seed={0.5}
       style={{
-        left: 130,
-        top: 190,
-        width: 820,
-        height: 470,
-        backgroundColor: J.charcoal,
+        left: 110,
+        top: 220,
+        width: 860,
+        height: 290,
+        backgroundColor: "#1d1f23",
+        outline: "1.5px solid #F4C9B2aa",
       }}
     >
       <div
         style={{
-          padding: "36px 44px",
-          fontFamily: monoJ,
-          fontSize: 34,
-          color: J.cream,
-          lineHeight: 1.9,
+          textAlign: "center",
+          paddingTop: 44,
+          fontFamily: sans,
+          color: "#F6F3EE",
         }}
       >
         <div
           style={{
-            fontFamily: head,
-            fontWeight: 800,
-            fontSize: 50,
-            marginBottom: 14,
-          }}
-        >
-          WordPress · Divi
-        </div>
-        {["Hero", "Projects", "Form"].map((r) => (
-          <div key={r}>
-            <span style={{ color: J.terra }}>✓</span> {r}{" "}
-            <span style={{ opacity: 0.55 }}>· client can edit</span>
-          </div>
-        ))}
-      </div>
-    </Card>
-  ),
-  (f) => <Phone frame={f} />,
-  () => (
-    <>
-      <Card
-        style={{
-          left: 110,
-          top: 230,
-          width: 860,
-          height: 300,
-          backgroundColor: J.charcoal,
-          border: `6px solid ${J.terra}`,
-        }}
-      >
-        <div
-          style={{
-            textAlign: "center",
-            paddingTop: 52,
-            fontFamily: monoJ,
-            fontSize: 34,
+            fontWeight: 500,
+            fontSize: 36,
             letterSpacing: 6,
-            color: J.cream,
+            opacity: 0.8,
           }}
         >
           COMMENT
-          <div
-            style={{
-              marginTop: 18,
-              fontFamily: head,
-              fontWeight: 800,
-              fontSize: 60,
-              letterSpacing: 0,
-              color: J.terra,
-            }}
-          >
-            WORKFLOW
-          </div>
         </div>
-      </Card>
-    </>
+        <div
+          style={{
+            marginTop: 10,
+            fontWeight: 700,
+            fontSize: 104,
+            letterSpacing: -2,
+            color: "#F4C9B2",
+          }}
+        >
+          WORKFLOW
+        </div>
+      </div>
+    </FloatCard>
   ),
 ];
 
@@ -257,13 +372,8 @@ export const Cards: React.FC = () => {
       {LINES.map((line, i) => {
         const from = line.start - 0.3;
         const to = (LINES[i + 1]?.start ?? line.end - 0.2) - 0.1;
-        if (t < from || t > to + 0.4) return null;
-        const inn = interpolate(t, [from, from + 0.5], [0, 1], {
-          extrapolateLeft: "clamp",
-          extrapolateRight: "clamp",
-          easing: ease,
-        });
-        const out = interpolate(t, [to, to + 0.35], [1, 0], {
+        if (t < from || t > to + 0.5) return null;
+        const out = interpolate(t, [to, to + 0.4], [1, 0], {
           extrapolateLeft: "clamp",
           extrapolateRight: "clamp",
         });
@@ -273,9 +383,9 @@ export const Cards: React.FC = () => {
             style={{
               position: "absolute",
               inset: 0,
-              opacity: inn * out,
-              translate: `0px ${(1 - inn) * 80}px`,
-              scale: 0.94 + 0.06 * inn,
+              opacity: out,
+              filter: `blur(${(1 - out) * 12}px)`,
+              scale: 1 + (1 - out) * 0.03,
             }}
           >
             {CARDS[line.card](Math.max(0, frame - Math.round(from * fps)))}
