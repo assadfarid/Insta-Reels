@@ -201,3 +201,252 @@ class SceneFX:
                 cv2.line(lay, (int(x), int(y)), (int(x2), int(y2)), float(1 - age / 0.9), 2, cv2.LINE_AA)
         lay = cv2.GaussianBlur(lay, (0, 0), 1.2)
         add += lay[..., None] * np.array([255, 200, 110], np.float32) / 255 * 220
+
+
+# =====================================================================
+#  Environment motion: wind, water, waterfalls, clouds, scarf, smoke,
+#  birds, butterfly, lamp flicker and hand-drawn "boiling" lines.
+# =====================================================================
+OUTDOOR = {'s29', 's30', 's31', 's32', 's33', 's34', 's35', 's36', 's37', 's38', 's39', 's40', 's49'}
+FOLIAGE = {'s30', 's31', 's32', 's33', 's34', 's35', 's49', 's37', 's39'}
+SKY = {'s30', 's33', 's34', 's36', 's37', 's38', 's39', 's40', 's49'}
+SCARF = {'s30', 's31', 's32', 's33', 's34', 's35', 's36', 's37', 's38', 's39', 's40'}
+BIRDS = {'s30': 4, 's34': 3, 's36': 3, 's49': 3, 's33': 2, 's40': 2}
+# water boxes (x0, y0, x1, y1) in normalised source coords
+WATER = {
+    's30': [(0.36, 0.60, 0.62, 0.76)],
+    's36': [(0.0, 0.40, 0.48, 0.62), (0.78, 0.55, 1.0, 0.95)],
+    's39': [(0.0, 0.52, 0.30, 0.78), (0.70, 0.52, 1.0, 0.78)],
+    's49': [(0.40, 0.55, 0.55, 0.62)],
+}
+FALLS = {
+    's30': [(0.08, 0.60, 0.20, 0.78), (0.20, 0.76, 0.36, 1.0), (0.40, 0.76, 0.54, 1.0),
+            (0.62, 0.40, 0.72, 0.60), (0.73, 0.46, 0.84, 0.64)],
+    's49': [(0.44, 0.52, 0.53, 0.60)],
+}
+SMOKE = {'s06': [(0.14, 0.43), (0.43, 0.24)], 's07': [(0.70, 0.40)]}
+LAMP = {'s06', 's09', 's41', 's42'}
+BUTTERFLY = {'s32': (0.245, 0.38, 0.045)}
+
+
+def _tile_noise(seed, size=256, sx=6.0, sy=6.0):
+    r = np.random.default_rng(seed)
+    n = r.standard_normal((size, size)).astype(np.float32)
+    big = cv2.GaussianBlur(np.tile(n, (3, 3)), (0, 0), sigmaX=sx, sigmaY=sy)[size:2 * size, size:2 * size]
+    return big / (np.abs(big).max() + 1e-6)
+
+
+NZ = {k: _tile_noise(i + 11) for i, k in enumerate(('boil_a', 'boil_b', 'fol', 'water', 'sky', 'fall'))}
+NZ['streak'] = _tile_noise(40, sx=1.2, sy=14)
+NZ['spark'] = _tile_noise(41, sx=1.5, sy=1.5)
+NZ['smoke'] = _tile_noise(42, sx=7, sy=7)
+
+
+def _samp(n, X, Y):
+    s = n.shape[0]
+    return n[Y.astype(np.int32) % s, X.astype(np.int32) % s]
+
+
+_grids = {}
+
+
+def _grid(w, h):
+    if (w, h) not in _grids:
+        _grids[(w, h)] = np.meshgrid(np.arange(w, dtype=np.float32), np.arange(h, dtype=np.float32))
+    return _grids[(w, h)]
+
+
+def _box_mask(shape, boxes, feather):
+    h, w = shape
+    m = np.zeros((h, w), np.float32)
+    for x0, y0, x1, y1 in boxes:
+        m[int(y0 * h):int(y1 * h), int(x0 * w):int(x1 * w)] = 1
+    return cv2.GaussianBlur(m, (0, 0), feather)
+
+
+def _init_env(self, src):
+    h, w = src.shape[:2]
+    name = self.name
+    hsv = cv2.cvtColor(src, cv2.COLOR_RGB2HSV)
+    H_, S_, V_ = hsv[..., 0], hsv[..., 1], hsv[..., 2]
+    gray = cv2.cvtColor(src, cv2.COLOR_RGB2GRAY).astype(np.float32)
+    grad = cv2.GaussianBlur(np.abs(cv2.Sobel(gray, cv2.CV_32F, 1, 0)) + np.abs(cv2.Sobel(gray, cv2.CV_32F, 0, 1)), (0, 0), 6)
+    f = w / 2720.0
+    self.env = {}
+    if name in FOLIAGE:
+        m = ((H_ > 28) & (H_ < 90) & (S_ > 55) & (V_ > 40)).astype(np.float32)
+        if name == 's32':  # flowers too
+            m = np.maximum(m, ((S_ > 120) & (V_ > 120) & ((H_ < 25) | (H_ > 160))).astype(np.float32))
+            m[int(h * 0.15):, int(w * 0.33):int(w * 0.85)] *= 0  # keep the girl/robot still
+        self.env['fol'] = cv2.GaussianBlur(m, (0, 0), 5 * f)
+    if name in SKY:
+        low = (grad < 18).astype(np.uint8)
+        low[int(h * 0.6):] = 0
+        n, lab = cv2.connectedComponents(low)
+        top = set(np.unique(lab[0])) - {0}
+        m = np.isin(lab, list(top)).astype(np.uint8)
+        m = cv2.erode(m, np.ones((int(30 * f) | 1, int(30 * f) | 1), np.uint8))
+        self.env['sky'] = cv2.GaussianBlur(m.astype(np.float32), (0, 0), 25 * f)
+    if name in SCARF:
+        m = ((S_ > 110) & (V_ > 50) & ((H_ < 9) | (H_ > 170))).astype(np.uint8)
+        m = cv2.dilate(m, np.ones((int(9 * f) | 1, int(9 * f) | 1), np.uint8))
+        self.env['scarf'] = cv2.GaussianBlur(m.astype(np.float32), (0, 0), 4 * f)
+    if name in WATER:
+        bm = _box_mask((h, w), WATER[name], 12 * f)
+        calm = np.clip(1.0 - grad / 60.0, 0, 1)
+        self.env['water'] = bm * cv2.GaussianBlur(calm, (0, 0), 4 * f)
+    if name in FALLS:
+        bm = _box_mask((h, w), FALLS[name], 6 * f)
+        white = ((V_ > 170) & (S_ < 90)).astype(np.float32)
+        self.env['fall'] = bm * cv2.GaussianBlur(white, (0, 0), 3 * f)
+    # downscale masks to half source res to keep warps cheap
+    for k in list(self.env):
+        self.env[k] = cv2.resize(self.env[k], (w // 2, h // 2), interpolation=cv2.INTER_AREA)
+    self.src_wh = (w, h)
+
+
+def _warp_mask(m, M, hw, hh):
+    Mh = M.copy() * 0.5
+    Mh[:, :2] *= 2.0     # mask is half source res
+    return cv2.warpAffine(m, Mh, (hw, hh), flags=cv2.INTER_LINEAR)
+
+
+def motion(self, frame, M, t, lt):
+    """Displacement-based animation of the environment + additive layers."""
+    if not hasattr(self, 'env'):
+        return frame
+    W, H = self.W, self.H
+    hw, hh = W // 2, H // 2
+    S = W / 1920.0
+    X, Y = _grid(hw, hh)
+    dx = np.zeros((hh, hw), np.float32)
+    dy = np.zeros((hh, hw), np.float32)
+    add = np.zeros((hh, hw, 3), np.float32)
+    name = self.name
+
+    # hand-drawn line boil: new wobble pattern ~8 times a second (animated "on threes")
+    k = int(t * 8)
+    ox, oy = (k * 97) % 256, (k * 53) % 256
+    dx += _samp(NZ['boil_a'], X * 0.9 + ox, Y * 0.9 + oy) * 1.1 * S
+    dy += _samp(NZ['boil_b'], X * 0.9 + oy, Y * 0.9 + ox) * 1.1 * S
+
+    env = {kk: _warp_mask(v, M, hw, hh) for kk, v in self.env.items()}
+
+    if 'fol' in env:
+        gust = 0.65 + 0.35 * math.sin(t * 0.45)
+        sway = (np.sin(t * 1.7 + X * 0.012 + Y * 0.02) * 0.6 +
+                _samp(NZ['fol'], X * 0.6 + t * 22, Y * 0.6) * 0.8)
+        dx += env['fol'] * sway * 4.2 * S * gust
+        dy += env['fol'] * _samp(NZ['fol'], X * 0.6 + 80, Y * 0.6 + t * 15) * 1.6 * S
+
+    if 'sky' in env:
+        dx += env['sky'] * _samp(NZ['sky'], X * 0.12 + t * 5, Y * 0.12) * 9 * S
+        dy += env['sky'] * _samp(NZ['sky'], X * 0.12 + 120, Y * 0.12 + t * 2) * 3 * S
+        cloud = np.clip(_samp(NZ['smoke'], X * 0.25 - t * 7, Y * 0.5) * 1.2 - 0.2, 0, 1)
+        warm = np.array([1.0, 0.85, 0.7], np.float32) if name in {'s36', 's37', 's38', 's39', 's40'} \
+            else np.array([1.0, 1.0, 1.0], np.float32)
+        add += (env['sky'] * cloud)[..., None] * warm * 22
+
+    if 'scarf' in env:
+        flut = np.sin(t * 5.5 + Y * 0.09) * 0.7 + _samp(NZ['fol'], X * 1.5 + t * 40, Y * 1.5) * 0.6
+        dx += env['scarf'] * flut * 3.2 * S
+        dy += env['scarf'] * np.sin(t * 4.1 + X * 0.07) * 1.2 * S
+
+    if 'water' in env:
+        w = env['water']
+        rip = np.sin(Y * 0.55 - t * 2.4 + _samp(NZ['water'], X * 0.35 + t * 9, Y * 0.9) * 2.5)
+        dx += w * rip * 2.6 * S
+        dy += w * _samp(NZ['water'], X * 0.5, Y * 1.5 - t * 12) * 1.0 * S
+        glint = np.clip(_samp(NZ['spark'], X * 0.7 + t * 14, Y * 2.2) - 0.45, 0, 1) * 2.2
+        add += (w * glint)[..., None] * np.array([1.0, 0.95, 0.85], np.float32) * 120
+
+    if 'fall' in env:
+        fm = env['fall']
+        dy += fm * _samp(NZ['fall'], X * 1.2, Y * 0.35 - t * 70) * 5 * S
+        dx += fm * _samp(NZ['fall'], X * 1.2 + 70, Y * 0.35 - t * 70) * 1.5 * S
+        streak = np.clip(_samp(NZ['streak'], X * 2.0, Y * 0.5 - t * 110) - 0.15, 0, 1)
+        add += (fm * streak)[..., None] * 95
+        mist = np.clip(_samp(NZ['smoke'], X * 0.5 + t * 6, Y * 0.5 + t * 10), 0, 1)
+        add += (cv2.GaussianBlur(fm, (0, 0), 14) * mist)[..., None] * 40
+
+    if name in BUTTERFLY:
+        bx, by, br = BUTTERFLY[name]
+        sw, sh_ = self.src_wh
+        cx, cy = M @ np.array([bx * sw, by * sh_, 1.0])
+        cx, cy, rr = cx / 2, cy / 2, br * sw * M[0, 0] / 2
+        d = np.sqrt((X - cx) ** 2 + (Y - cy) ** 2)
+        wmask = np.clip(1 - d / rr, 0, 1) ** 0.7
+        flap = 0.35 * (0.5 + 0.5 * math.sin(t * 11))
+        dx += wmask * (X - cx) * flap * 2  # squash wings toward body (in full-res px)
+
+    # apply displacement (fields are in full-res px, sampled at half res)
+    dxf = cv2.resize(dx, (W, H), interpolation=cv2.INTER_LINEAR)
+    dyf = cv2.resize(dy, (W, H), interpolation=cv2.INTER_LINEAR)
+    Xf, Yf = _grid(W, H)
+    frame = cv2.remap(frame, Xf + dxf, Yf + dyf, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+
+    # smoke wisps
+    if name in SMOKE:
+        sw, sh_ = self.src_wh
+        lay = np.zeros((hh, hw), np.float32)
+        for sxn, syn in SMOKE[name]:
+            px, py = M @ np.array([sxn * sw, syn * sh_, 1.0])
+            px, py = px / 2, py / 2
+            up = np.clip((py - Y) / (160 * S), 0, 1)               # above the source
+            wob = _samp(NZ['smoke'], X * 0.8, Y * 0.8 + t * 30) * 25 * S * (0.3 + up)
+            spread = 12 * S + up * 45 * S
+            col = np.exp(-((X - px - wob) ** 2) / (2 * spread ** 2)) * (Y < py) * (1 - up) ** 0.6
+            dens = np.clip(_samp(NZ['smoke'], X * 0.9 + 40, Y * 0.9 + t * 45) + 0.3, 0, 1)
+            lay += col * dens
+        add += np.clip(lay, 0, 1)[..., None] * np.array([215, 210, 205], np.float32) * 0.45
+
+    # birds
+    if name in BIRDS:
+        sw, sh_ = self.src_wh
+        lay = np.zeros((hh, hw), np.float32)
+        r = np.random.default_rng(int(name[1:]))
+        for b in range(BIRDS[name]):
+            speed = r.uniform(25, 45) * S
+            x0 = r.uniform(-0.3, 0.9) * hw
+            y0 = r.uniform(0.06, 0.28) * hh
+            bx = (x0 + speed * lt) % (hw * 1.3) - 0.15 * hw
+            by = y0 + math.sin(lt * 0.9 + b) * 6 * S
+            flap = math.sin(lt * 9 + b * 2)
+            s = r.uniform(5, 8) * S
+            p1 = (int(bx - s), int(by - flap * s * 0.6))
+            p2 = (int(bx), int(by + s * 0.25))
+            p3 = (int(bx + s), int(by - flap * s * 0.6))
+            cv2.polylines(lay, [np.array([p1, p2, p3], np.int32)], False, 1.0, max(1, int(1.6 * S)), cv2.LINE_AA)
+        lay = cv2.resize(lay, (W, H))
+        frame *= (1 - 0.65 * lay[..., None])
+
+    # lamp flicker
+    if name in LAMP:
+        hx, hy = M @ np.array([self.hot[0], self.hot[1], 1.0])
+        d = np.sqrt((X - hx / 2) ** 2 + (Y - hy / 2) ** 2)
+        fl = 0.5 + 0.5 * math.sin(t * 9) * math.sin(t * 3.7 + 1)
+        add += (np.exp(-d / (160 * S)) * (12 + 14 * fl))[..., None] * np.array([1.0, 0.8, 0.5], np.float32)
+
+    if add.any():
+        frame += cv2.resize(add, (W, H), interpolation=cv2.INTER_LINEAR)
+    return frame
+
+
+SceneFX._init_env = _init_env
+SceneFX.motion = motion
+_orig_init = SceneFX.__init__
+_orig_apply = SceneFX.apply
+
+
+def _new_init(self, name, src, W, H):
+    _orig_init(self, name, src, W, H)
+    self._init_env(src)
+
+
+def _new_apply(self, frame, M, t, local_t, dur):
+    frame = self.motion(frame, M, t, local_t)
+    return _orig_apply(self, frame, M, t, local_t, dur)
+
+
+SceneFX.__init__ = _new_init
+SceneFX.apply = _new_apply
