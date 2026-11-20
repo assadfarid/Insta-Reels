@@ -242,7 +242,15 @@ class Captions:
     def draw(self, out, t, shot_M, hud_active):
         """shot_M: dict scene -> (M, src_w, src_h) for currently visible image shots."""
         W, H, S = self.W, self.H, self.S
+        # only one narrator subtitle at a time: the most recently started one
+        cur_n = None
         for it in self.items:
+            if it['sp'] == 'N' and it['a'] - 0.15 <= t < it['b'] + 0.2:
+                if cur_n is None or it['a'] > cur_n['a']:
+                    cur_n = it
+        for it in self.items:
+            if it['sp'] == 'N' and it is not cur_n:
+                continue
             if not (it['a'] - 0.15 <= t < it['b'] + 0.2):
                 continue
             fade = min(ease((t - it['a'] + 0.15) / 0.18), 1 - ease((t - it['b']) / 0.2))
