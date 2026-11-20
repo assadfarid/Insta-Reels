@@ -292,17 +292,20 @@ class Captions:
             hx, hy = M @ np.array([ax * sw, ay * sh, 1.0])
             bw, bh = self._comic_size(it['text'], it['sp'])
             gap = 80 * S
-            below = False
+            below = False                      # tails always point DOWN
             bx = hx - bw * 0.35 if hx < W / 2 else hx - bw * 0.65
             by = hy - gap - bh
-            if by < 30 * S:                     # no room above: put it below the head
-                by = hy + gap
-                below = True
+            if by < 30 * S:
+                # no room above the head: sit beside it, bottom edge just above head level
+                by = max(30 * S, hy - bh - 20 * S)
+                if hx > W / 2:
+                    bx = hx - bw - 60 * S
+                else:
+                    bx = hx + 60 * S
             bx = min(max(bx, 40 * S), W - bw - 40 * S)
             by = min(max(by, 30 * S), H - bh - 170 * S)
             if hud_active and bx < 760 * S and by < 260 * S:
-                by = 270 * S
-                below = by > hy
+                bx = 780 * S                   # slide right of Echo's diagnostic panel
             # --- springy pop-in, gentle float, soft shrink-out -------------
             p = (t - (it['a'] - 0.15)) / 0.42
             if p < 1:
