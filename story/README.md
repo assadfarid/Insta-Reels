@@ -10,7 +10,7 @@ Builds a ~12-minute 16:9 narrated storybook film from `script.py`.
 | Split | `split2.py` | Cuts each take back into single lines (silence detection matched to text length) |
 | Timeline | `timeline.py` | Lays out lines, shots, chapter cards, HUD overlays and the music plan into `timeline.json` |
 | Audio | `mix_audio.py` | Places dialogue, adds radio/recording FX, loops and ducks the score, loudness-normalises (-16 LUFS) |
-| Video | `render.py` | Ken Burns motion, crossfades, title cards, typed HUD readouts, vignette and grain at 1920x1080/24fps |
+| Video | `render.py` + `effects.py` | Ken Burns motion with handheld float, per-scene living effects (glowing/blinking eyes, light flicker, sparks, particles, light rays, hologram, headlights), crossfades, title cards, typed HUD readouts, vignette and grain at 1920x1080/24fps |
 
 Render: `python3 timeline.py && python3 mix_audio.py && for p in 0 1 2; do python3 render.py $p 3 & done; wait`,
 then concatenate `out/part_*.mp4` and mux with `assets/mix.wav`.

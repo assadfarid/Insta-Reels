@@ -5,6 +5,7 @@ Writes out/part_<part>.mp4 (video only). Frames are split into equal ranges.
 """
 import json, sys, math, subprocess, numpy as np, cv2
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from effects import SceneFX
 
 W, H, FPS = 1920, 1080, 24
 XF = 0.9  # crossfade seconds
@@ -46,18 +47,25 @@ def kenburns(shot, t):
     ih, iw = im.shape[:2]
     m = shot['motion']
     p = ease((t - shot['start']) / max(0.01, shot['end'] - shot['start']))
-    z = m['z0'] + (m['z1'] - m['z0']) * p
+    z = m['z0'] + (m['z1'] - m['z0']) * p + 0.05   # headroom for handheld float
     cw = iw / z
     ch = cw * H / W
     if ch > ih:
         ch = ih / z; cw = ch * W / H
     cx = iw / 2 + m['dx'] * iw * (p - 0.5)
     cy = ih / 2 + m['dy'] * ih * (p - 0.5)
+    # gentle handheld float (two slow sines per axis, phase per shot)
+    ph = (int(shot['img'][1:]) * 37 % 100) / 10.0
+    cx += iw * 0.006 * (math.sin(t * 0.37 + ph) + 0.5 * math.sin(t * 0.83 + ph * 2))
+    cy += ih * 0.006 * (math.sin(t * 0.29 + ph * 1.3) + 0.5 * math.sin(t * 0.71 + ph))
+    rot = 0.25 * math.sin(t * 0.21 + ph)
     cx = min(max(cx, cw / 2), iw - cw / 2)
     cy = min(max(cy, ch / 2), ih - ch / 2)
     sc = W / cw
     M = np.array([[sc, 0, -(cx - cw / 2) * sc], [0, sc, -(cy - ch / 2) * sc]], np.float32)
-    return cv2.warpAffine(im, M, (W, H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+    R = cv2.getRotationMatrix2D((W / 2, H / 2), rot, 1.0)
+    M = (np.vstack([R, [0, 0, 1]]) @ np.vstack([M, [0, 0, 1]]))[:2].astype(np.float32)
+    return cv2.warpAffine(im, M, (W, H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT), M
 
 
 def centered(draw, y, text, font, fill, shadow=True):
@@ -161,12 +169,20 @@ rng = np.random.default_rng(part)
 GRAIN = [(rng.standard_normal((H // 2, W // 2, 1)) * 2.5).astype(np.float32) for _ in range(6)]
 
 
+_fx = {}
+
+
 def shot_frame(shot, t):
     if shot['kind'] in ('main', 'title'):
         base = title_frame(shot)
         # slow drift so titles aren't static
         return base
-    return kenburns(shot, t).astype(np.float32)
+    fr, M = kenburns(shot, t)
+    fr = fr.astype(np.float32)
+    name = shot['img']
+    if name not in _fx:
+        _fx[name] = SceneFX(name, src_img(name), W, H)
+    return _fx[name].apply(fr, M, t, t - shot['start'], shot['end'] - shot['start'])
 
 
 def frame_at(t):
@@ -204,6 +220,9 @@ if '--stills' in sys.argv:
 total_frames = int(tl['total'] * FPS)
 per = math.ceil(total_frames / nparts)
 f0, f1 = part * per, min(total_frames, (part + 1) * per)
+if '--clip' in sys.argv:
+    a, b = [float(x) for x in sys.argv[sys.argv.index('--clip') + 1].split(',')]
+    f0, f1 = int(a * FPS), int(b * FPS)
 enc = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}',
                         '-r', str(FPS), '-i', '-', '-c:v', 'libx264', '-preset', 'veryfast' if FAST else 'fast',
                         '-crf', '19', '-pix_fmt', 'yuv420p', '-threads', '2', '-g', str(FPS * 4),
