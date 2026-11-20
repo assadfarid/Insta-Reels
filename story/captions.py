@@ -101,6 +101,11 @@ class Captions:
                 d = total * len(c) / L
                 self.items.append({'sp': sp, 'scene': scene, 'text': c, 'a': t, 'b': t + d})
                 t += d
+        # a bubble closes as soon as the next one opens (no overlapping bubbles)
+        bub = sorted([i for i in self.items if i['sp'] != 'N'], key=lambda i: i['a'])
+        for a_, b_ in zip(bub, bub[1:]):
+            if b_['a'] - 0.2 < a_['b']:
+                a_['b'] = max(a_['a'] + 0.4, b_['a'] - 0.2)
         self._cache = {}
 
     # ---------------- rendering of individual elements (cached RGBA) ----------
