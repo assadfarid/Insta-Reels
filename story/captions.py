@@ -72,9 +72,19 @@ class Captions:
         self.track_sub = -0.8 * S   # tight letter spacing
         self.track_bub = -0.6 * S
         self.items = []
+        WT = json.load(open('word_times.json'))
         for ln in tl['lines']:
             scene = LINES[ln['idx']][0]
             sp = ln['speaker']
+            if sp == 'N' and str(ln['idx']) in WT:
+                words = WT[str(ln['idx'])]
+                k = 0
+                for c in chunk(ln['text'], 84):
+                    n = len(c.split())
+                    ws = words[k:k + n]; k += n
+                    self.items.append({'sp': 'N', 'scene': scene, 'text': c, 'words': ws,
+                                       'a': ws[0][1] - 0.12, 'b': ws[-1][2] + 0.35})
+                continue
             maxc = 84 if sp == 'N' else 54
             chunks = chunk(ln['text'], maxc)
             total = ln['dur'] + 0.35
@@ -88,6 +98,43 @@ class Captions:
 
     # ---------------- rendering of individual elements (cached RGBA) ----------
     def _subtitle(self, text):
+        key = ('sub2', text)
+        if key in self._cache:
+            return self._cache[key]
+        S, f, tr = self.S, self.f_sub, self.track_sub
+        lines = wrap(text, f, 1500 * S, tr)
+        lh = int(58 * S)
+        w = int(max(tw(l, f, tr) for l in lines) + 80 * S)
+        h = int(lh * len(lines) + 40 * S)
+        sh = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+        ds = ImageDraw.Draw(sh)
+        spans = []
+        for i, l in enumerate(lines):
+            x = (w - tw(l, f, tr)) / 2
+            y = 18 * S + i * lh
+            draw_tracked(ds, (x, y + 2 * S), l, f, (0, 0, 0, 255), tr)
+            pos = 0
+            for wd in l.split(' '):
+                j = l.index(wd, pos)
+                x0 = x + f.getlength(l[:j]) + tr * j
+                x1 = x + f.getlength(l[:j + len(wd)]) + tr * (j + len(wd))
+                spans.append((int(y - 4 * S), int(y + lh), x0, x1))
+                pos = j + len(wd)
+        sh = sh.filter(ImageFilter.GaussianBlur(5 * S))
+        base = Image.alpha_composite(Image.new('RGBA', (w, h), (0, 0, 0, 0)), sh)
+        base = Image.alpha_composite(base, sh)
+        white, green = base.copy(), base.copy()
+        dw, dg = ImageDraw.Draw(white), ImageDraw.Draw(green)
+        for i, l in enumerate(lines):
+            x = (w - tw(l, f, tr)) / 2
+            y = 18 * S + i * lh
+            draw_tracked(dw, (x, y), l, f, (255, 252, 245, 255), tr)
+            draw_tracked(dg, (x, y), l, f, (120, 232, 92, 255), tr)
+        res = (np.asarray(white).astype(np.float32), np.asarray(green).astype(np.float32), spans)
+        self._cache[key] = res
+        return res
+
+    def _subtitle_old(self, text):
         key = ('sub', text)
         if key in self._cache:
             return self._cache[key]
@@ -201,7 +248,14 @@ class Captions:
             if fade <= 0:
                 continue
             if it['sp'] == 'N':
-                lay = self._subtitle(it['text'])
+                white, green, spans = self._subtitle(it['text'])
+                lay = white.copy()
+                for (y0, y1, x0, x1), (_, ta, tb) in zip(spans, it.get('words', [])):
+                    if t <= ta:
+                        break
+                    frac = 1.0 if t >= tb else (t - ta) / max(0.05, tb - ta)
+                    xa, xb = int(x0 - 2), int(x0 + (x1 - x0) * frac + (2 if frac >= 1 else 0))
+                    lay[max(0, y0):y1, max(0, xa):xb] = green[max(0, y0):y1, max(0, xa):xb]
                 h, w = lay.shape[:2]
                 x = int((W - w) / 2)
                 y = int(H - h - 46 * S + (1 - fade) * 8 * S)
