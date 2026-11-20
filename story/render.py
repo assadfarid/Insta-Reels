@@ -62,7 +62,54 @@ SHAKE = [(_ln['start'] + _ln['dur'] * 0.72, LINES[_ln['idx']][0]) for _ln in tl[
          if 'collapses onto the bridge' in LINES[_ln['idx']][2]]
 
 
+import os as _os
+CLIP_SPEED = {'s37': None, 's07': 0.85}      # None = stretch to fill the whole shot
+CLIPS = {}
+for _s in tl['shots']:
+    _n = _s.get('img')
+    if _s['kind'] == 'img' and _n in CLIP_SPEED and _os.path.exists(f'assets/clips/{_n}.mp4') and _n not in CLIPS:
+        _cdur = 10.0
+        _span = _s['end'] - _s['start'] + XF
+        _sp = CLIP_SPEED[_n] or min(1.0, _cdur / _span)
+        CLIPS[_n] = {'start': _s['start'], 'speed': _sp, 'end': _s['start'] + _cdur / _sp - 0.05,
+                     'fill': CLIP_SPEED[_n] is None}
+
+
+class _ClipReader:
+    def __init__(self, path):
+        self.path = path; self.cap = cv2.VideoCapture(path); self.idx = -1; self.frame = None
+        self.n = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+    def get(self, i):
+        i = max(0, min(self.n - 1, i))
+        if i < self.idx:
+            self.cap.release(); self.cap = cv2.VideoCapture(self.path); self.idx = -1
+        while self.idx < i:
+            ok, fr = self.cap.read()
+            if not ok:
+                break
+            self.idx += 1; self.frame = cv2.cvtColor(fr, cv2.COLOR_BGR2RGB)
+        return self.frame
+
+
+_readers = {}
+
+
+def clip_frame(name, t, M):
+    c = CLIPS[name]
+    if name not in _readers:
+        _readers[name] = _ClipReader(f'assets/clips/{name}.mp4')
+    rd = _readers[name]
+    fr = rd.get(int((t - c['start']) * c['speed'] * 24))
+    ih, iw = src_img(name).shape[:2]
+    fh, fw = fr.shape[:2]
+    Mv = (np.vstack([M, [0, 0, 1]]) @ np.diag([iw / fw, ih / fh, 1.0]))[:2].astype(np.float32)
+    return cv2.warpAffine(fr, Mv, (W, H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+
+
 def camera_M(shot, t):
+    if shot.get('img') in CLIPS:
+        t = max(t, CLIPS[shot['img']]['end'])      # camera holds still while the video plays
     ih, iw = src_img(shot['img']).shape[:2]
     m = shot['motion']
     p = ease((t - shot['start']) / max(0.01, shot['end'] - shot['start']))
@@ -214,10 +261,24 @@ def shot_frame(shot, t):
         base = title_frame(shot)
         # slow drift so titles aren't static
         return base
-    fr, M = kenburns(shot, t)
-    fr = fr.astype(np.float32)
     name = shot['img']
     ih, iw = src_img(name).shape[:2]
+    if name in CLIPS and t < CLIPS[name]['end'] + 1.0:
+        c = CLIPS[name]
+        M = camera_M(shot, t)
+        CUR_M[name] = (M, iw, ih)
+        vid = clip_frame(name, min(t, c['end']), M).astype(np.float32)
+        if c['fill'] or t < c['end']:
+            return vid
+        # blend from the video into the living illustration over 1s
+        a = ease((t - c['end']) / 1.0)
+        fr, M = kenburns(shot, t)
+        if name not in _fx:
+            _fx[name] = SceneFX(name, src_img(name), W, H)
+        still = _fx[name].apply(fr.astype(np.float32), M, t, t - shot['start'], shot['end'] - shot['start'])
+        return vid * (1 - a) + still * a
+    fr, M = kenburns(shot, t)
+    fr = fr.astype(np.float32)
     CUR_M[name] = (M, iw, ih)
     if name not in _fx:
         _fx[name] = SceneFX(name, src_img(name), W, H)
