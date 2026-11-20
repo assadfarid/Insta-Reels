@@ -143,7 +143,7 @@ class Captions:
             x = (w - tw(l, f, tr)) / 2
             y = 18 * S + i * lh
             draw_tracked(dw, (x, y), l, f, (255, 252, 245, 255), tr)
-            draw_tracked(dg, (x, y), l, f, (120, 232, 92, 255), tr)
+            draw_tracked(dg, (x, y), l, f, (255, 210, 60, 255), tr)
         if npre:  # speaker name in its own colour, same in both layers
             l0 = lines[0]
             x = (w - tw(l0, f, tr)) / 2
