@@ -345,14 +345,20 @@ class Captions:
             by += math.sin((t - it['a']) * 2.1 + seed) * 3.2 * S
             bx += math.sin((t - it['a']) * 1.3 + seed * 2) * 1.6 * S
             # tail: base on the edge nearest the head, tip toward the head (limited length)
-            cx = min(max(hx - bx, bw * 0.2), bw * 0.8)
-            ey = 0 if below else bh
-            vx, vy = hx - (bx + cx), hy - (by + ey)
+            # tail base on the bottom edge, as close to the speaker as possible
+            cx = min(max(hx - bx, bw * 0.15), bw * 0.85)
+            ey = bh
+            # aim at the top of the speaker's head; always downward, tilted toward them
+            tx_, ty_ = hx, hy - fhh * 0.75
+            vx, vy = tx_ - (bx + cx), ty_ - (by + ey)
+            if vy < 25 * S:
+                vy = 25 * S
             L = math.hypot(vx, vy) + 1e-6
-            tl_ = min(L - 12 * S, 70 * S)
-            tdx, tdy = vx / L * tl_, vy / L * tl_
-            if (tdy > 0) == below:      # head is not on the tail side: short straight tail
-                tdx, tdy = 0, (-40 if below else 40) * S
+            ux, uy = vx / L, vy / L
+            if uy < 0.42:                # don't let it go nearly horizontal
+                uy = 0.42; ux = math.copysign(math.sqrt(1 - uy * uy), ux)
+            tl_ = min(max(L - 8 * S, 38 * S), 72 * S)
+            tdx, tdy = ux * tl_, uy * tl_
             arr, (px, py), tip = self._comic(it['text'], it['sp'], cx, tdx, tdy, below)
             # scale around the tail tip so the bubble grows out of the speaker
             if abs(sc - 1) > 0.01:
@@ -391,8 +397,9 @@ def _comic(self, text, sp, cx, tdx, tdy, below):
     S = self.S
     q = 8 * S
     cxq = round(cx / q) * q
-    flip = tdx > 6 * S       # tail tip leans toward the speaker's side
-    key = ('panel', text, cxq, flip, below)
+    tq = 6 * S
+    tdxq, tdyq = round(tdx / tq) * tq, round(tdy / tq) * tq
+    key = ('panel2', text, cxq, tdxq, tdyq, below)
     if key in self._cache:
         return self._cache[key]
     bw, bh, lines, lh = self._cache[('csz', text, sp)]
@@ -433,8 +440,7 @@ def _comic(self, text, sp, cx, tdx, tdy, below):
     poly += corner(TR, BR, BL)
     if not below:  # tail on the bottom edge (traversed right -> left), pointing down
         xl, xr = base_c - half, base_c + half
-        tipx = xl - 6 * S if not flip else xr + 6 * S
-        tip = (tipx, y_on(BR, BL, tipx) + tl_len)
+        tip = (base_c + tdxq, y_on(BR, BL, base_c) + tdyq)
         poly += [(xr, y_on(BR, BL, xr)), tip, (xl, y_on(BR, BL, xl))]
     poly += corner(BR, BL, TL)
     ow = max(2, int(3.4 * S))
