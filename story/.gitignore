@@ -4,3 +4,4 @@ out/log_*
 test/
 groups.txt
 urls_*.txt
+out/parts.txt
