@@ -1,0 +1,6 @@
+assets/
+out/*.mp4
+out/log_*
+test/
+groups.txt
+urls_*.txt
