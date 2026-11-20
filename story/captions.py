@@ -75,7 +75,7 @@ class Captions:
         self.W, self.H = W, H
         self.S = S = W / 1920
         self.f_sub = ImageFont.truetype(KIDS, int(48 * S))
-        self.f_bub = ImageFont.truetype(KIDS, int(39 * S))
+        self.f_bub = ImageFont.truetype(KIDS, int(38 * S))
         self.track_sub = -0.8 * S   # tight letter spacing
         self.track_bub = -0.6 * S
         self.items = []
@@ -338,10 +338,14 @@ def _comic_size(self, text, sp):
     key = ('csz', text, sp)
     if key not in self._cache:
         S, f, tr = self.S, self.f_bub, self.track_bub
-        lines = wrap(text, f, 520 * S, tr)
+        maxw = 300 * S if len(text) < 45 else 360 * S
+        lines = wrap(text, f, maxw, tr)
         lh = int(46 * S)
         tw_ = max(tw(l, f, tr) for l in lines)
-        bw, bh = int(tw_ + 84 * S), int(lh * len(lines) + 58 * S)
+        bw = int(max(tw_ + 120 * S, 210 * S))
+        bh = int(lh * len(lines) + 96 * S)
+        bh = max(bh, int(bw / 1.9))          # chunky like the reference, never a thin strip
+        bw = max(bw, int(bh * 1.5))
         self._cache[key] = (bw, bh, lines, lh)
     return self._cache[key][:2]
 
@@ -443,68 +447,75 @@ def _place(self, it, get_M, M_now, sw, sh):
 
 
 def _comic(self, text, sp, cx, tdx, tdy, mirror):
-    """Panel bubble like the reference: the side nearest the speaker is SHORT (narrow),
-    the far side TALL; soft corners, thin ink outline, hard shadow right+bottom, sharp tail."""
+    """Speech bubble traced from the user's reference: chunky panel, left side short,
+    right side tall; top edge rises to the right, bottom edge sags slightly and drops to
+    the right; softly rounded corners; thin black outline; solid black shadow on the right
+    and bottom; short sharp tail near the narrow corner whose inner edge drops almost
+    straight down. Mirrored when the speaker is on the right."""
     S = self.S
-    q = 6 * S
-    cxq, tdxq, tdyq = round(cx / q) * q, round(tdx / q) * q, round(tdy / q) * q
-    key = ('panel3', text, cxq, tdxq, tdyq, mirror)
+    lean = max(-1.0, min(1.0, tdx / max(1.0, abs(tdy) + 1)))        # -1..1, toward speaker
+    leanq = round(lean * 4) / 4
+    key = ('ref1', text, sp, mirror, leanq)
     if key in self._cache:
         return self._cache[key]
     bw, bh, lines, lh = self._cache[('csz', text, sp)]
-    pad = int(120 * S)
+    w, h = float(bw), float(bh)
+    pad = int(140 * S)
     W_, H_ = bw + 2 * pad, bh + 2 * pad
-    ox, oy = pad, pad
-    rise = min(0.075 * bw, 0.26 * bh)    # top edge rises toward the far side
-    drop = min(0.05 * bw, 0.17 * bh)     # bottom edge drops toward the far side
-    # built with the NARROW side on the left; mirrored when the speaker is on the right
-    TL = (0, rise); TR = (bw, 0); BR = (bw, bh); BL = (0, bh - drop)
-    r = min(24 * S, bh * 0.26)
+    # reference proportions (narrow side on the LEFT)
+    TL = (0.000 * w, 0.115 * h)
+    TR = (1.000 * w, 0.000 * h)
+    BR = (0.982 * w, 1.000 * h)
+    BL = (0.030 * w, 0.935 * h)
+    r = 0.085 * h
 
-    def corner(prev, cur, nxt):
+    def corner(prev, cur, nxt, rr):
         d1 = math.hypot(cur[0] - prev[0], cur[1] - prev[1]); d2 = math.hypot(nxt[0] - cur[0], nxt[1] - cur[1])
-        a = (cur[0] + (prev[0] - cur[0]) * r / d1, cur[1] + (prev[1] - cur[1]) * r / d1)
-        b = (cur[0] + (nxt[0] - cur[0]) * r / d2, cur[1] + (nxt[1] - cur[1]) * r / d2)
+        a = (cur[0] + (prev[0] - cur[0]) * rr / d1, cur[1] + (prev[1] - cur[1]) * rr / d1)
+        b = (cur[0] + (nxt[0] - cur[0]) * rr / d2, cur[1] + (nxt[1] - cur[1]) * rr / d2)
         return [((1 - u) ** 2 * a[0] + 2 * (1 - u) * u * cur[0] + u * u * b[0],
-                 (1 - u) ** 2 * a[1] + 2 * (1 - u) * u * cur[1] + u * u * b[1]) for u in [k / 8 for k in range(9)]]
+                 (1 - u) ** 2 * a[1] + 2 * (1 - u) * u * cur[1] + u * u * b[1]) for u in [k / 10 for k in range(11)]]
 
-    body = corner(BL, TL, TR) + corner(TL, TR, BR) + corner(TR, BR, BL) + corner(BR, BL, TL)
+    def bottom(x):   # bottom edge: BL -> BR with a gentle sag
+        u = (x - BL[0]) / (BR[0] - BL[0])
+        return BL[1] + (BR[1] - BL[1]) * u + 0.018 * h * math.sin(math.pi * u)
+
+    # tail near the narrow (left) corner; inner edge almost vertical
+    t0, t1 = 0.15 * w, 0.15 * w + max(0.11 * w, 0.20 * h)
+    tl_len = 0.27 * h
+    tip = (t0 - 0.025 * w + leanq * 0.06 * w * (-1 if mirror else 1) * (-1), bottom(t0) + tl_len)
+    poly = []
+    poly += corner(BL, TL, TR, r)
+    poly += corner(TL, TR, BR, r * 0.9)
+    poly += corner(TR, BR, BL, r)
+    # bottom edge right -> left, inserting the tail
+    xs = [BR[0] - r * 1.05 + (k / 24) * ((BL[0] + r * 1.05) - (BR[0] - r * 1.05)) for k in range(25)]
+    for x in xs:
+        if x < t1 and not any(p == 'TAIL' for p in poly):
+            poly += [(t1, bottom(t1)), tip, (t0, bottom(t0)), 'TAIL']
+        if t0 <= x <= t1:
+            continue
+        poly.append((x, bottom(x)))
+    poly = [p for p in poly if p != 'TAIL']
+    poly += corner(BR, BL, TL, r)
     if mirror:
-        body = [(bw - x, y) for x, y in body][::-1]
-        ybot = lambda x: bh - drop * (x / bw)          # mirrored bottom edge (narrow on right)
-    else:
-        ybot = lambda x: bh - drop * (1 - x / bw)
-    body = [(ox + x, oy + y) for x, y in body]
-    # tail: base on the bottom edge at cx, tip toward the speaker
-    half = min(max(bw * 0.06, 20 * S), 30 * S)
-    xl, xr = cxq - half, cxq + half
-    b_l = (ox + xl, oy + ybot(xl) - 1); b_r = (ox + xr, oy + ybot(xr) - 1)
-    tip = (ox + cxq + tdxq, oy + ybot(cxq) + tdyq)
-    # insert tail into the body outline on the bottom edge
-    poly = None
-    for i in range(len(body)):
-        p, n = body[i], body[(i + 1) % len(body)]
-        if p[1] > oy + bh * 0.6 and n[1] > oy + bh * 0.6 and min(p[0], n[0]) <= ox + cxq <= max(p[0], n[0]):
-            if p[0] > n[0]:   # edge runs right -> left
-                ins = [b_r, tip, b_l]
-            else:
-                ins = [b_l, tip, b_r]
-            poly = body[:i + 1] + ins + body[i + 1:]
-            break
-    if poly is None:
-        poly = body
-    ow = max(2, int(3.4 * S))
-    sx_, sy_ = 10 * S, 8 * S
+        poly = [(w - x, y) for x, y in poly]
+        tip = (w - tip[0], tip[1])
+    poly = [(pad + x, pad + y) for x, y in poly]
+    tip = (pad + tip[0], pad + tip[1])
+    ow = max(2, int(3.0 * S))
+    sx_, sy_ = 7 * S, 6 * S
     im = Image.new('RGBA', (W_, H_), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
-    d.polygon([(x + sx_, y + sy_) for x, y in poly], fill=INK + (255,))
-    d.polygon(poly, fill=(255, 255, 255, 255), outline=INK + (255,), width=ow)
+    d.polygon([(x + sx_, y + sy_) for x, y in poly], fill=INK + (255,))      # solid shadow right+bottom
+    d.polygon(poly, fill=(255, 255, 255, 255))
+    d.line(poly + [poly[0]], fill=INK + (255,), width=ow, joint='curve')
     f, tr = self.f_bub, self.track_bub
-    top = oy + (bh - lh * len(lines)) / 2 - 3 * S + (rise - drop) * 0.2
+    top = pad + (h * 0.075) + (h * 0.90 - lh * len(lines)) / 2 - 2 * S
     for i, l in enumerate(lines):
-        x = ox + (bw - tw(l, f, tr)) / 2
+        x = pad + (w - tw(l, f, tr)) / 2
         draw_tracked(d, (x, top + i * lh), l, f, INK + (255,), tr)
-    res = (np.asarray(im).astype(np.float32), (ox, oy), tip)
+    res = (np.asarray(im).astype(np.float32), (pad, pad), tip)
     if len(self._cache) > 900:
         keep = {k: v for k, v in self._cache.items() if k[0] in ('place', 'csz', 'sub3')}
         self._cache.clear(); self._cache.update(keep)
