@@ -1,658 +1,658 @@
 1
-00:00:12,199 --> 00:00:27,775
+00:00:12,199 --> 00:00:27,552
 Deep underground, in a small dark bedroom, red emergency
 lights flicker. Eight-year-old Mia sleeps beneath an old
 blanket. On the nightstand beside her rests a framed
 photograph... of Mia and her mother.
 
 2
-00:00:28,625 --> 00:00:36,483
+00:00:28,402 --> 00:00:36,080
 ECHO-07 stands beside her bed, watching her quietly. Inside
 him, red warnings flash.
 
 3
-00:00:37,333 --> 00:00:39,909
+00:00:36,930 --> 00:00:39,504
 Mia slowly opens her eyes.
 
 4
-00:00:40,259 --> 00:00:41,299
+00:00:39,854 --> 00:00:40,894
 Mia: Echo?
 
 5
-00:00:41,399 --> 00:00:42,628
+00:00:40,994 --> 00:00:42,223
 Echo: Yes, Mia?
 
 6
-00:00:42,728 --> 00:00:45,040
+00:00:42,323 --> 00:00:44,635
 Mia: Is Mommy coming home tomorrow?
 
 7
-00:00:45,890 --> 00:00:53,359
+00:00:45,485 --> 00:00:52,684
 A new warning flashes inside him. Echo looks toward the
 photograph on the nightstand... and pauses.
 
 8
-00:00:53,709 --> 00:00:56,277
+00:00:53,034 --> 00:00:55,602
 Echo: Yes, Mia. Tomorrow.
 
 9
-00:00:57,127 --> 00:01:00,248
+00:00:56,452 --> 00:00:59,511
 Mia smiles, and closes her eyes.
 
 10
-00:01:00,598 --> 00:01:02,078
+00:00:59,861 --> 00:01:01,340
 Mia: Goodnight, Echo.
 
 11
-00:01:02,178 --> 00:01:03,327
+00:01:01,440 --> 00:01:02,589
 Echo: Goodnight, Mia.
 
 12
-00:01:04,177 --> 00:01:08,268
+00:01:03,439 --> 00:01:07,296
 And Echo's cyan eyes dim... with sadness.
 
 13
-00:01:13,668 --> 00:01:29,000
+00:01:12,696 --> 00:01:28,665
 Morning in the underground shelter. Echo stands at a small
 kitchen counter as smoke rises from the toaster. At the
 table, Mia watches... suspiciously. Echo proudly places a
 plate of burnt black toast in front of her.
 
 14
-00:01:29,850 --> 00:01:32,067
+00:01:29,515 --> 00:01:31,731
 Mia: You burned it again.
 
 15
-00:01:32,167 --> 00:01:35,886
+00:01:31,831 --> 00:01:35,550
 Echo: Incorrect. It is eighty-seven percent toasted.
 
 16
-00:01:35,986 --> 00:01:38,207
+00:01:35,650 --> 00:01:37,872
 Mia: It's BLACK!
 
 17
-00:01:38,307 --> 00:01:40,810
+00:01:37,972 --> 00:01:40,474
 Echo: A desirable shade of toast.
 
 18
-00:01:41,160 --> 00:01:46,552
+00:01:40,824 --> 00:01:46,524
 Mia bursts into laughter, while Echo examines the toast,
 looking confused.
 
 19
-00:01:46,902 --> 00:01:49,158
+00:01:46,874 --> 00:01:49,131
 Echo: Would you prefer eighty-six percent?
 
 20
-00:01:49,258 --> 00:01:51,823
+00:01:49,231 --> 00:01:51,796
 Mia: I'd prefer bread.
 
 21
-00:01:52,673 --> 00:02:01,092
+00:01:52,646 --> 00:02:01,044
 Echo tilts his head. Later, they play chess. When Echo looks
 away... Mia secretly moves one of his pieces.
 
 22
-00:02:01,442 --> 00:02:02,867
+00:02:01,394 --> 00:02:02,819
 Echo: You are cheating.
 
 23
-00:02:02,967 --> 00:02:04,241
+00:02:02,919 --> 00:02:04,193
 Mia: Prove it.
 
 24
-00:02:05,091 --> 00:02:13,566
+00:02:05,043 --> 00:02:13,612
 Echo looks directly at the moved piece, his eyes
 narrowing... then he deliberately moves another piece,
 letting Mia win.
 
 25
-00:02:13,916 --> 00:02:15,155
+00:02:13,962 --> 00:02:15,201
 Mia: Checkmate!
 
 26
-00:02:15,255 --> 00:02:17,230
+00:02:15,301 --> 00:02:17,276
 Echo: An unexpected defeat.
 
 27
-00:02:18,080 --> 00:02:29,834
+00:02:18,126 --> 00:02:29,669
 Mia celebrates, and Echo's eyes curve into a smile.
 Afterward, Mia draws a crayon picture of herself, Echo, and
 her mother, holding hands beneath a bright sun.
 
 28
-00:02:30,184 --> 00:02:33,273
+00:02:30,019 --> 00:02:33,108
 Mia: When Mommy comes back, we'll all go outside together.
 
 29
-00:02:33,373 --> 00:02:35,552
+00:02:33,208 --> 00:02:35,387
 Echo: That sounds... wonderful.
 
 30
-00:02:36,402 --> 00:02:39,212
+00:02:36,237 --> 00:02:39,022
 Mia tapes the drawing to Echo's chest.
 
 31
-00:02:39,562 --> 00:02:41,377
+00:02:39,372 --> 00:02:41,187
 Mia: Now we're a family.
 
 32
-00:02:42,227 --> 00:02:49,977
+00:02:42,037 --> 00:02:49,571
 Echo looks down at the drawing. His battery drops to ten
 percent... and he quietly covers the warning with his hand.
 
 33
-00:02:55,377 --> 00:03:06,950
+00:02:54,971 --> 00:03:06,290
 While Echo repairs equipment elsewhere, Mia explores a dim
 corridor with her flashlight. The beam reveals a large,
 locked metal door. Surface Access.
 
 34
-00:03:07,300 --> 00:03:08,853
+00:03:06,640 --> 00:03:08,193
 Mia: What's behind here?
 
 35
-00:03:09,703 --> 00:03:17,343
+00:03:09,043 --> 00:03:16,716
 She touches the access panel. A red lock appears... and an
 alarm sounds. Echo rushes into the corridor.
 
 36
-00:03:17,693 --> 00:03:19,997
+00:03:17,066 --> 00:03:19,370
 Echo: Mia! Step away from the door.
 
 37
-00:03:20,097 --> 00:03:21,995
+00:03:19,470 --> 00:03:21,368
 Mia: Why can't we go outside?
 
 38
-00:03:22,095 --> 00:03:23,943
+00:03:21,468 --> 00:03:23,316
 Echo: The surface is unsafe.
 
 39
-00:03:24,793 --> 00:03:27,660
+00:03:24,166 --> 00:03:27,134
 Mia looks at the door, then back at Echo.
 
 40
-00:03:28,010 --> 00:03:32,446
+00:03:27,484 --> 00:03:31,920
 Mia: But Mommy went outside. How many days has she been
 gone?
 
 41
-00:03:33,296 --> 00:03:35,685
+00:03:32,770 --> 00:03:35,223
 Echo becomes completely still.
 
 42
-00:03:36,035 --> 00:03:37,789
+00:03:35,573 --> 00:03:37,327
 Echo: You should return to your room.
 
 43
-00:03:38,389 --> 00:03:40,198
+00:03:37,927 --> 00:03:39,736
 Mia: Echo. How many?
 
 44
-00:03:40,798 --> 00:03:42,146
+00:03:40,336 --> 00:03:41,684
 Echo: I do not remember.
 
 45
-00:03:42,746 --> 00:03:44,948
+00:03:42,284 --> 00:03:44,486
 Mia: But you remember everything.
 
 46
-00:03:45,798 --> 00:03:51,246
+00:03:45,336 --> 00:03:50,705
 Disappointed, Mia walks away... leaving Echo alone beside
 the door.
 
 47
-00:03:56,646 --> 00:04:01,124
+00:03:56,105 --> 00:04:00,708
 That night, Mia wakes up... and Echo is gone.
 
 48
-00:04:01,474 --> 00:04:02,441
+00:04:01,058 --> 00:04:02,025
 Mia: Echo?
 
 49
-00:04:03,291 --> 00:04:13,784
+00:04:02,875 --> 00:04:13,325
 She follows a faint mechanical sound into a dark maintenance
 room. Echo is kneeling beside a damaged charging station.
 Sparks fly from the cables.
 
 50
-00:04:14,134 --> 00:04:17,917
+00:04:13,675 --> 00:04:17,458
 Echo: Attempt twenty-seven... unsuccessful.
 
 51
-00:04:18,767 --> 00:04:31,124
+00:04:18,308 --> 00:04:30,524
 Nearby, Mia notices an old computer terminal. On its
 screen... her mother's photograph. She presses play. Doctor
 Elena appears, in a flickering blue recording.
 
 52
-00:04:31,974 --> 00:04:44,500
+00:04:31,374 --> 00:04:43,900
 Dr. Elena: Echo. If you're watching this, the evacuation has
 failed. Keep Mia safe. She's only three. She won't
 understand what's happening. If I don't return... promise me
 you won't let her lose hope.
 
 53
-00:04:44,600 --> 00:04:45,690
+00:04:44,000 --> 00:04:45,090
 Echo: I promise.
 
 54
-00:04:46,540 --> 00:04:53,500
+00:04:45,940 --> 00:04:52,725
 The recording ends. Startled, Mia knocks a metal container
 to the floor. Echo turns around.
 
 55
-00:04:53,850 --> 00:04:59,148
+00:04:53,075 --> 00:04:58,373
 Mia: I was three? You've been telling me tomorrow for FIVE
 years?
 
 56
-00:04:59,248 --> 00:05:01,564
+00:04:58,473 --> 00:05:00,789
 Echo: Mia, I was trying to...
 
 57
-00:05:01,664 --> 00:05:03,976
+00:05:00,889 --> 00:05:03,201
 Mia: You lied to me!
 
 58
-00:05:04,826 --> 00:05:11,296
+00:05:04,051 --> 00:05:10,810
 Mia runs out of the room. Echo stays beside the broken
 charger... as his eyes dim.
 
 59
-00:05:16,696 --> 00:05:24,951
+00:05:16,210 --> 00:05:24,428
 Mia sits alone on her bed, hugging her red scarf. Echo
 approaches the closed door, carrying a small dinner tray.
 
 60
-00:05:25,801 --> 00:05:30,519
+00:05:25,278 --> 00:05:29,995
 Echo: Mia. Your dinner is ready. I did not burn the toast.
 
 61
-00:05:31,119 --> 00:05:33,478
+00:05:30,595 --> 00:05:32,954
 Mia: Go away.
 
 62
-00:05:34,328 --> 00:05:38,582
+00:05:33,804 --> 00:05:38,389
 Echo slowly lowers the tray, and sits down against the
 closed door.
 
 63
-00:05:39,432 --> 00:05:41,719
+00:05:39,239 --> 00:05:41,525
 Mia: You said robots can't lie.
 
 64
-00:05:42,319 --> 00:05:43,808
+00:05:42,125 --> 00:05:43,615
 Echo: We are not supposed to.
 
 65
-00:05:44,408 --> 00:05:46,012
+00:05:44,215 --> 00:05:45,819
 Mia: Then why did you?
 
 66
-00:05:46,862 --> 00:05:48,443
+00:05:46,669 --> 00:05:48,455
 Echo looks at the floor.
 
 67
-00:05:48,793 --> 00:05:55,432
+00:05:48,805 --> 00:05:55,443
 Echo: The first time I told you she would return... you
 stopped crying. I wanted you to smile again.
 
 68
-00:05:56,282 --> 00:05:59,922
+00:05:56,293 --> 00:06:00,151
 Inside the bedroom, Mia looks at her mother's photograph.
 
 69
-00:06:00,272 --> 00:06:02,202
+00:06:00,501 --> 00:06:02,431
 Mia: That doesn't make it okay.
 
 70
-00:06:02,802 --> 00:06:04,775
+00:06:03,031 --> 00:06:05,005
 Echo: No. It does not.
 
 71
-00:06:05,375 --> 00:06:07,830
+00:06:05,605 --> 00:06:08,059
 Mia: I hate you.
 
 72
-00:06:08,430 --> 00:06:09,403
+00:06:08,659 --> 00:06:09,632
 Echo: Understood.
 
 73
-00:06:10,253 --> 00:06:18,189
+00:06:10,482 --> 00:06:18,956
 He leaves the tray outside her door. Suddenly... the lights
 flicker. Echo looks toward the forbidden surface door.
 
 74
-00:06:23,589 --> 00:06:31,938
+00:06:24,356 --> 00:06:33,234
 The whole shelter loses power. Darkness... then the red
 emergency lights kick on. Mia wakes up, frightened.
 
 75
-00:06:32,288 --> 00:06:33,306
+00:06:33,584 --> 00:06:34,603
 Mia: Echo?
 
 76
-00:06:34,156 --> 00:06:37,463
+00:06:35,453 --> 00:06:38,865
 Echo enters, holding her bright yellow raincoat.
 
 77
-00:06:37,813 --> 00:06:39,119
+00:06:39,215 --> 00:06:40,521
 Echo: We have to leave.
 
 78
-00:06:39,219 --> 00:06:41,390
+00:06:40,621 --> 00:06:42,792
 Mia: Leave? Where?
 
 79
-00:06:41,490 --> 00:06:42,525
+00:06:42,892 --> 00:06:43,927
 Echo: Outside.
 
 80
-00:06:43,375 --> 00:06:54,773
+00:06:44,777 --> 00:06:56,510
 At the Surface Access door, Echo enters an emergency
 override code. The heavy door slowly grinds open... and warm
 golden sunlight floods the dark corridor.
 
 81
-00:06:55,623 --> 00:07:08,875
+00:06:57,360 --> 00:07:10,407
 Mia and Echo step out into a breathtaking, abandoned city...
 overgrown with green vines, blooming flowers and clear
 flowing streams. Birds soar across the bright sky.
 
 82
-00:07:09,725 --> 00:07:12,912
+00:07:11,257 --> 00:07:14,444
 Mia: Wow... You said it wasn't safe.
 
 83
-00:07:13,012 --> 00:07:15,946
+00:07:14,544 --> 00:07:17,479
 Echo: The last surface readings were five years old.
 
 84
-00:07:16,046 --> 00:07:17,628
+00:07:17,579 --> 00:07:19,160
 Mia: You could've checked.
 
 85
-00:07:17,728 --> 00:07:18,563
+00:07:19,260 --> 00:07:20,095
 Echo: Yes.
 
 86
-00:07:19,413 --> 00:07:24,605
+00:07:20,945 --> 00:07:26,069
 A colorful butterfly flutters down, and lands on Mia's
 outstretched hand.
 
 87
-00:07:24,955 --> 00:07:27,123
+00:07:26,419 --> 00:07:28,587
 Mia: I've never seen a real one.
 
 88
-00:07:27,973 --> 00:07:31,297
+00:07:29,437 --> 00:07:32,874
 Suddenly, Echo's sensors pick up a faint signal.
 
 89
-00:07:31,647 --> 00:07:34,442
+00:07:33,224 --> 00:07:36,019
 Echo: Mia. There are other people.
 
 90
-00:07:34,542 --> 00:07:35,513
+00:07:36,119 --> 00:07:37,090
 Mia: Mommy?
 
 91
-00:07:35,613 --> 00:07:36,656
+00:07:37,190 --> 00:07:38,233
 Echo: I don't know.
 
 92
-00:07:37,506 --> 00:07:40,880
+00:07:39,083 --> 00:07:42,672
 Mia looks toward the distant radio tower on the horizon.
 
 93
-00:07:41,230 --> 00:07:42,796
+00:07:43,022 --> 00:07:44,589
 Mia: Then let's find out.
 
 94
-00:07:48,196 --> 00:07:56,461
+00:07:49,989 --> 00:07:58,297
 As they walk through the overgrown streets, Mia picks a
 small wildflower, and tucks it beside the crayon drawing on
 Echo's chest.
 
 95
-00:07:56,811 --> 00:07:58,646
+00:07:58,647 --> 00:08:00,481
 Mia: Now you look official.
 
 96
-00:07:58,746 --> 00:08:00,589
+00:08:00,581 --> 00:08:02,425
 Echo: I was already official.
 
 97
-00:08:01,439 --> 00:08:11,166
+00:08:03,275 --> 00:08:12,643
 Mia smiles. By sunset, they reach an old ruined bridge
 leading toward the radio tower, its red beacon flashing in
 the distance.
 
 98
-00:08:12,016 --> 00:08:20,094
+00:08:13,493 --> 00:08:21,625
 Echo's steps grow slower. His damaged arm twitches... until
 his knees give way, and he collapses onto the bridge.
 
 99
-00:08:20,444 --> 00:08:21,471
+00:08:21,975 --> 00:08:23,003
 Mia: Echo!
 
 100
-00:08:22,321 --> 00:08:25,365
+00:08:23,853 --> 00:08:27,117
 She kneels beside him as he struggles to get up.
 
 101
-00:08:25,715 --> 00:08:28,538
+00:08:27,467 --> 00:08:30,290
 Echo: A temporary malfunction.
 
 102
-00:08:28,888 --> 00:08:31,816
+00:08:30,640 --> 00:08:33,528
 Mia sees the flashing light on his chest.
 
 103
-00:08:32,166 --> 00:08:34,526
+00:08:33,878 --> 00:08:36,239
 Mia: Stop lying!
 
 104
-00:08:34,626 --> 00:08:36,375
+00:08:36,339 --> 00:08:38,087
 Echo: My battery is depleted.
 
 105
-00:08:36,475 --> 00:08:38,344
+00:08:38,187 --> 00:08:40,056
 Mia: Then we'll find another one.
 
 106
-00:08:38,444 --> 00:08:42,494
+00:08:40,156 --> 00:08:44,206
 Echo: There is insufficient time. You must continue without
 me.
 
 107
-00:08:43,344 --> 00:08:45,662
+00:08:45,056 --> 00:08:47,598
 Mia shakes her head, firmly.
 
 108
-00:08:46,012 --> 00:08:46,936
+00:08:47,948 --> 00:08:48,871
 Mia: No.
 
 109
-00:08:47,036 --> 00:08:47,837
+00:08:48,971 --> 00:08:49,772
 Echo: Mia...
 
 110
-00:08:47,937 --> 00:08:49,640
+00:08:49,872 --> 00:08:51,575
 Mia: You're my family too.
 
 111
-00:08:49,990 --> 00:08:55,088
+00:08:51,925 --> 00:08:56,997
 Mia holds out her hand. A soft smile appears in Echo's eyes.
 
 112
-00:08:55,438 --> 00:08:57,797
+00:08:57,347 --> 00:08:59,706
 Echo: Then we will go together.
 
 113
-00:08:58,647 --> 00:09:06,033
+00:09:00,556 --> 00:09:07,909
 With her red scarf blowing in the sunset wind, Mia supports
 Echo's weight... as they cross the bridge together.
 
 114
-00:09:11,433 --> 00:09:20,894
+00:09:13,309 --> 00:09:23,225
 Night falls as they reach the abandoned radio station. Echo
 examines the emergency transmitter, pressing switches... but
 nothing turns on.
 
 115
-00:09:21,244 --> 00:09:23,493
+00:09:23,575 --> 00:09:25,824
 Echo: The transmitter has no power.
 
 116
-00:09:24,343 --> 00:09:31,050
+00:09:26,674 --> 00:09:33,847
 Echo looks at the loose power cables... then down at his own
 chest. He picks up a heavy cable.
 
 117
-00:09:31,400 --> 00:09:33,280
+00:09:34,197 --> 00:09:36,077
 Mia: What are you doing?
 
 118
-00:09:33,630 --> 00:09:36,900
+00:09:36,427 --> 00:09:39,855
 Echo plugs the cable directly into his chest.
 
 119
-00:09:37,250 --> 00:09:40,184
+00:09:40,205 --> 00:09:43,140
 Echo: Mia. I need you to press that button.
 
 120
-00:09:40,534 --> 00:09:41,952
+00:09:43,490 --> 00:09:44,821
 She hesitates.
 
 121
-00:09:42,302 --> 00:09:43,273
+00:09:45,171 --> 00:09:46,142
 Echo: Please.
 
 122
-00:09:44,123 --> 00:09:53,176
+00:09:46,992 --> 00:09:55,695
 Mia presses the button. Blue lights glow across the console.
 Static crackles from the speaker... and then, a voice.
 
 123
-00:09:53,526 --> 00:09:56,438
+00:09:56,045 --> 00:09:58,958
 Radio: Hello? Is somebody there?
 
 124
-00:09:57,288 --> 00:09:59,069
+00:09:59,808 --> 00:10:01,794
 Mia grabs the microphone.
 
 125
-00:09:59,419 --> 00:10:02,372
+00:10:02,144 --> 00:10:05,097
 Mia: Please help! My friend is dying!
 
 126
-00:10:02,472 --> 00:10:04,652
+00:10:05,197 --> 00:10:07,377
 Radio: Stay where you are. We're coming.
 
 127
-00:10:05,502 --> 00:10:07,180
+00:10:08,227 --> 00:10:09,993
 Mia turns to Echo.
 
 128
-00:10:07,530 --> 00:10:11,143
+00:10:10,343 --> 00:10:13,956
 Mia: They're coming! You heard them! They'll fix you.
 
 129
-00:10:11,493 --> 00:10:15,414
+00:10:14,306 --> 00:10:18,351
 Echo's eyes begin to flicker. Mia takes his hand.
 
 130
-00:10:15,764 --> 00:10:17,621
+00:10:18,701 --> 00:10:20,558
 Mia: Promise me you'll be okay.
 
 131
-00:10:18,471 --> 00:10:22,284
+00:10:21,408 --> 00:10:25,217
 Echo looks down at the crayon family drawing on his chest.
 
 132
-00:10:22,634 --> 00:10:23,826
+00:10:25,567 --> 00:10:26,759
 Echo: I promise.
 
 133
-00:10:24,676 --> 00:10:30,119
+00:10:27,609 --> 00:10:33,557
 Echo's cyan eyes slowly dim to black. His hand goes still.
 
 134
-00:10:30,469 --> 00:10:33,140
+00:10:33,907 --> 00:10:36,578
 Mia: Echo? Echo!
 
 135
-00:10:33,990 --> 00:10:41,143
+00:10:37,428 --> 00:10:44,732
 Mia wraps her arms around him... as the headlights of a
 distant rescue vehicle shine through the station windows.
 
 136
-00:10:46,543 --> 00:10:54,046
+00:10:50,132 --> 00:10:57,688
 Three weeks later, morning sunlight fills a peaceful
 settlement, surrounded by gardens and rebuilt homes.
 
 137
-00:10:54,896 --> 00:11:02,446
+00:10:58,538 --> 00:11:06,127
 Inside a warm wooden workshop, Mia waits anxiously beside
 Echo, as a technician connects a new power cell.
 
 138
-00:11:02,796 --> 00:11:04,455
+00:11:06,477 --> 00:11:08,135
 Technician: Let's see if this works.
 
 139
-00:11:05,305 --> 00:11:10,043
+00:11:08,985 --> 00:11:13,634
 Echo's systems hum to life. His cyan eyes light up.
 
 140
-00:11:10,393 --> 00:11:11,454
+00:11:13,984 --> 00:11:15,045
 Mia: Echo!
 
 141
-00:11:11,554 --> 00:11:15,622
+00:11:15,145 --> 00:11:19,213
 Echo: Hello. I am ECHO-07. How may I assist you?
 
 142
-00:11:16,472 --> 00:11:24,505
+00:11:20,063 --> 00:11:27,827
 Mia's smile fades. Slowly, she takes out their worn crayon
 drawing, and places it into Echo's hands.
 
 143
-00:11:24,855 --> 00:11:27,439
+00:11:28,177 --> 00:11:30,761
 Mia: It's okay. We can start again.
 
 144
-00:11:28,289 --> 00:11:34,828
+00:11:31,611 --> 00:11:38,252
 She turns toward the door. Behind her, Echo looks down at
 the drawing... his eyes flickering.
 
 145
-00:11:35,178 --> 00:11:35,904
+00:11:38,602 --> 00:11:39,328
 Echo: Mia?
 
 146
-00:11:36,254 --> 00:11:39,731
+00:11:39,678 --> 00:11:43,150
 She freezes... and slowly turns around.
 
 147
-00:11:40,081 --> 00:11:42,119
+00:11:43,500 --> 00:11:45,538
 Mia: You remember me?
 
 148
-00:11:42,719 --> 00:11:46,493
+00:11:46,138 --> 00:11:49,912
 Echo: I remember... that you prefer your toast unburned.
 
 149
-00:11:47,343 --> 00:12:00,675
+00:11:50,762 --> 00:12:03,227
 Laughing through her tears, Mia runs to him and throws her
 arms around him. Echo gently holds her close, their family
 drawing in his hand... as warm morning sunlight fills the
 workshop.
 
 150
-00:12:01,025 --> 00:12:02,013
+00:12:03,577 --> 00:12:04,553
 The End.

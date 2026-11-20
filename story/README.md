@@ -15,4 +15,4 @@ Builds a ~12-minute 16:9 narrated storybook film from `script.py`.
 Render: `python3 timeline.py && python3 mix_audio.py && for p in 0 1 2; do python3 render.py $p 3 & done; wait`,
 then concatenate `out/part_*.mp4` and mux with `assets/mix.wav`.
 
-Voices (ElevenLabs): narrator Jeremy, Mia Emmaline, Echo Sigma Centauri, Dr. Elena Lulu, radio operator Liam, technician Jason.
+Voices (ElevenLabs): narrator Tom (deep, caring), Mia Emmaline, Echo Sigma Centauri, Dr. Elena Lulu, radio operator Liam, technician Jason.
