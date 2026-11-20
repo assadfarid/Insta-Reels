@@ -6,6 +6,7 @@ Writes out/part_<part>.mp4 (video only). Frames are split into equal ranges.
 import json, sys, math, subprocess, numpy as np, cv2
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from effects import SceneFX
+from captions import Captions
 
 W, H, FPS = 1920, 1080, 24
 XF = 0.9  # crossfade seconds
@@ -170,6 +171,8 @@ GRAIN = [(rng.standard_normal((H // 2, W // 2, 1)) * 2.5).astype(np.float32) for
 
 
 _fx = {}
+CUR_M = {}
+CAP = None
 
 
 def shot_frame(shot, t):
@@ -180,12 +183,18 @@ def shot_frame(shot, t):
     fr, M = kenburns(shot, t)
     fr = fr.astype(np.float32)
     name = shot['img']
+    ih, iw = src_img(name).shape[:2]
+    CUR_M[name] = (M, iw, ih)
     if name not in _fx:
         _fx[name] = SceneFX(name, src_img(name), W, H)
     return _fx[name].apply(fr, M, t, t - shot['start'], shot['end'] - shot['start'])
 
 
 def frame_at(t):
+    global CAP
+    if CAP is None:
+        CAP = Captions(tl, W, H)
+    CUR_M.clear()
     active = [s for s in tl['shots'] if s['start'] - 1e-6 <= t < s['end'] + XF]
     out = np.zeros((H, W, 3), np.float32)
     for s in active:
@@ -208,6 +217,8 @@ def frame_at(t):
     out *= VIG * g
     gr = GRAIN[int(t * FPS) % len(GRAIN)]
     out += cv2.resize(gr, (W, H), interpolation=cv2.INTER_LINEAR)[..., None]
+    hud_on = any(h['start'] <= t < h['end'] + 0.4 for h in tl['huds'])
+    CAP.draw(out, t, CUR_M, hud_on)
     return np.clip(out, 0, 255).astype(np.uint8)
 
 
