@@ -74,9 +74,12 @@ for m in tl['music']:
 # duck music under speech: envelope follower on the voice
 env = np.abs(voice)
 win = int(0.25 * SR)
-k = np.ones(win, np.float32) / win
-env = np.convolve(env, k, mode='same')
-env = np.convolve(env, np.ones(int(0.6 * SR), np.float32) / int(0.6 * SR), mode='same')
+def smooth(x, n):
+    c = np.cumsum(np.concatenate([np.zeros(1, np.float64), x.astype(np.float64)]))
+    y = (c[n:] - c[:-n]) / n
+    pad = len(x) - len(y)
+    return np.pad(y, (pad // 2, pad - pad // 2), mode='edge').astype(np.float32)
+env = smooth(smooth(env, win), int(0.6 * SR))
 duck = 1.0 - 0.55 * np.clip(env / 0.02, 0, 1)
 music *= 0.32 * duck
 # fade music in at the very start and out at the end

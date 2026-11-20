@@ -56,9 +56,8 @@ for i, (scene, sp, text, hud) in enumerate(LINES):
         t += 1.0
         ch_start[chapter] = t
         title_start = t
-        a_start = t + 1.3
-        lines.append({'idx': i, 'speaker': sp, 'start': a_start, 'dur': d, 'text': clean(text)})
-        t = a_start + d + 1.6
+        # Chapter cards are silent (music only): no narrated chapter title
+        t = t + 4.2
         shots.append({'kind': 'title', 'img': None, 'start': title_start - 0.5, 'end': t + 0.6,
                       'chapter': chapter, 'title': CH_TITLES[chapter]})
         cur_scene, cur_shot, prev_speaker = None, None, None
