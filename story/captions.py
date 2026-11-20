@@ -8,6 +8,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 INTER = 'assets/fonts/inter-latin-700-normal.woff'
+KIDS = 'assets/fonts/fredoka-latin-600-normal.woff'
 exec(open('script.py').read())  # LINES
 ANCH = json.load(open('anchors.json'))
 
@@ -66,10 +67,10 @@ class Captions:
     def __init__(self, tl, W, H):
         self.W, self.H = W, H
         self.S = S = W / 1920
-        self.f_sub = ImageFont.truetype(INTER, int(46 * S))
-        self.f_bub = ImageFont.truetype(INTER, int(38 * S))
-        self.track_sub = -1.6 * S   # tight letter spacing
-        self.track_bub = -1.2 * S
+        self.f_sub = ImageFont.truetype(KIDS, int(48 * S))
+        self.f_bub = ImageFont.truetype(KIDS, int(39 * S))
+        self.track_sub = -0.8 * S   # tight letter spacing
+        self.track_bub = -0.6 * S
         self.items = []
         for ln in tl['lines']:
             scene = LINES[ln['idx']][0]

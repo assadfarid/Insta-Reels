@@ -197,8 +197,8 @@ def chapter_layer(title):
     if title in _chap_cache:
         return _chap_cache[title]
     num, name = title
-    f1 = ImageFont.truetype(F_HAND, int(56 * S))
-    f2 = ImageFont.truetype(F_TITLE, int(96 * S))
+    f1 = ImageFont.truetype('assets/fonts/fredoka-latin-500-normal.woff', int(52 * S))
+    f2 = ImageFont.truetype('assets/fonts/fredoka-latin-600-normal.woff', int(100 * S))
     lay = Image.new('RGBA', (W, H), (0, 0, 0, 0))
     # soft dark glow behind the text for legibility
     glow = Image.new('L', (W, H), 0)
