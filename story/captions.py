@@ -13,6 +13,8 @@ KIDS = 'assets/fonts/fredoka-latin-600-normal.woff'
 exec(open('script.py').read())  # LINES
 ANCH = json.load(open('anchors.json'))
 FACES = json.load(open('faces.json'))
+FACES2 = json.load(open('faces2.json'))
+TL_HUDS = json.load(open('timeline.json'))['huds']
 # close-up shots: faces are much bigger on screen
 FACE_SCALE = {'s03': 1.6, 's04': 1.8, 's05': 1.8, 's12': 1.8, 's32': 1.8, 's46': 1.8, 's47': 2.4,
               's54': 1.8, 's44': 1.5, 's25': 1.4, 's07': 1.2, 's09': 1.2}
@@ -257,7 +259,7 @@ class Captions:
         d.line([(rel[0][0] + 3 * S, jy), (rel[1][0] - 3 * S, jy)], fill=st['fill'] + (255,), width=max(3, int(5 * S)))
         self._blend(out, np.asarray(im).astype(np.float32), x0, y0, alpha)
 
-    def draw(self, out, t, shot_M, hud_active):
+    def draw(self, out, t, shot_M, hud_active, get_M=None):
         """shot_M: dict scene -> (M, src_w, src_h) for currently visible image shots."""
         W, H, S = self.W, self.H, self.S
         # only one narrator subtitle at a time: the most recently started one
@@ -288,47 +290,13 @@ class Captions:
                 y = int(H - h - 46 * S + (1 - fade) * 8 * S)
                 self._blend(out, lay, x, y, fade)
                 continue
-            key = f"{it['scene']}:{it['sp']}"
-            if it['scene'] not in shot_M or key not in ANCH:
+            if it['scene'] not in shot_M:
                 continue
             M, sw, sh = shot_M[it['scene']]
-            ax, ay = ANCH[key]
-            hx, hy = M @ np.array([ax * sw, ay * sh, 1.0])
-            bw, bh = self._comic_size(it['text'], it['sp'])
-            below = False                      # tails always point DOWN
-            # face no-go boxes (every known face in this scene, in screen coords)
-            fs_ = FACE_SCALE.get(it['scene'], 1.0)
-            fhw, fhh = 150 * S * fs_, 175 * S * fs_
-            boxes = []
-            for sp_, (fx, fy) in FACES.get(it['scene'], {}).items():
-                px_, py_ = M @ np.array([fx * sw, fy * sh, 1.0])
-                boxes.append((px_ - fhw, py_ - fhh, px_ + fhw, py_ + fhh * 0.8))
-            if hud_active:
-                boxes.append((0, 0, 780 * S, 260 * S))
-            top_face = hy - fhh
-            cands = [
-                (hx - bw * (0.35 if hx < W / 2 else 0.65), top_face - 75 * S - bh),   # above head (tail ends above hair)
-                (hx - fhw - 20 * S - bw, top_face - 40 * S - bh * 0.5),                # upper-left
-                (hx + fhw + 20 * S, top_face - 40 * S - bh * 0.5),                     # upper-right
-                (hx - fhw - 30 * S - bw, hy - bh - 80 * S),                            # left side
-                (hx + fhw + 30 * S, hy - bh - 80 * S),                                 # right side
-                (hx - bw * 0.5, top_face - 120 * S - bh),                              # higher above
-            ]
-            def overlap(x, y):
-                tot = 0.0
-                for (x0, y0, x1, y1) in boxes:
-                    ox_ = max(0, min(x + bw, x1) - max(x, x0)); oy_ = max(0, min(y + bh + 70 * S, y1) - max(y, y0))
-                    tot += ox_ * oy_
-                return tot
-            best = None
-            for k_, (cx_, cy_) in enumerate(cands):
-                x = min(max(cx_, 40 * S), W - bw - 40 * S)
-                y = min(max(cy_, 30 * S), H - bh - 170 * S)
-                moved = abs(x - cx_) + abs(y - cy_)
-                score = overlap(x, y) * 40 + moved * 4 + k_ * 300 * S + abs((x + bw / 2) - hx) * 0.5
-                if best is None or score < best[0]:
-                    best = (score, x, y)
-            bx, by = best[1], best[2]
+            plc = self._place(it, get_M, M, sw, sh)
+            if plc is None:
+                continue
+            bw, bh = plc['bw'], plc['bh']
             # --- springy pop-in, gentle float, soft shrink-out -------------
             p = (t - (it['a'] - 0.15)) / 0.42
             if p < 1:
@@ -341,31 +309,19 @@ class Captions:
             alpha = min(1.0, max(0.0, (t - (it['a'] - 0.15)) / 0.12)) * (1 - ease((t - it['b']) / 0.2))
             if alpha <= 0:
                 continue
+            # follow the camera: placement is stored in source-image coordinates
+            bx, by = M @ np.array([plc['sx'], plc['sy'], 1.0])
+            tipx_s, tipy_s = M @ np.array([plc['tx'], plc['ty'], 1.0])
             seed = (sum(map(ord, it['text'])) % 97) / 15.0
-            by += math.sin((t - it['a']) * 2.1 + seed) * 3.2 * S
-            bx += math.sin((t - it['a']) * 1.3 + seed * 2) * 1.6 * S
-            # tail: base on the edge nearest the head, tip toward the head (limited length)
-            # tail base on the bottom edge, as close to the speaker as possible
-            cx = min(max(hx - bx, bw * 0.15), bw * 0.85)
-            ey = bh
-            # aim at the top of the speaker's head; always downward, tilted toward them
-            tx_, ty_ = hx, hy - fhh * 0.75
-            vx, vy = tx_ - (bx + cx), ty_ - (by + ey)
-            if vy < 25 * S:
-                vy = 25 * S
-            L = math.hypot(vx, vy) + 1e-6
-            ux, uy = vx / L, vy / L
-            if uy < 0.42:                # don't let it go nearly horizontal
-                uy = 0.42; ux = math.copysign(math.sqrt(1 - uy * uy), ux)
-            tl_ = min(max(L - 8 * S, 38 * S), 72 * S)
-            tdx, tdy = ux * tl_, uy * tl_
-            arr, (px, py), tip = self._comic(it['text'], it['sp'], cx, tdx, tdy, below)
-            # scale around the tail tip so the bubble grows out of the speaker
+            by += math.sin((t - it['a']) * 2.1 + seed) * 2.5 * S
+            bx += math.sin((t - it['a']) * 1.3 + seed * 2) * 1.2 * S
+            cx = plc['cx']
+            tdx, tdy = tipx_s - (bx + cx), tipy_s - (by + bh)
+            arr, (px, py), tip = self._comic(it['text'], it['sp'], cx, tdx, tdy, plc['mirror'])
             if abs(sc - 1) > 0.01:
                 img = cv2.resize(arr, None, fx=sc, fy=sc, interpolation=cv2.INTER_LINEAR)
             else:
                 img = arr
-            # anchor the bubble so its body stays where we placed it; tail drops toward the head
             tipx = bx + tip[0] - px
             tipy = by + tip[1] - py
             self._blend(out, img, int(tipx - tip[0] * sc), int(tipy - tip[1] * sc), alpha)
@@ -390,77 +346,172 @@ def _comic_size(self, text, sp):
     return self._cache[key][:2]
 
 
-def _comic(self, text, sp, cx, tdx, tdy, below):
-    """Panel bubble modelled on the reference: top edge rising to the right, bottom edge
-    sloping gently down, soft corners, thin ink outline, hard black shadow right+bottom,
-    and a straight sharp tail leaving the bottom edge near one side."""
-    S = self.S
-    q = 8 * S
-    cxq = round(cx / q) * q
-    tq = 6 * S
-    tdxq, tdyq = round(tdx / tq) * tq, round(tdy / tq) * tq
-    key = ('panel2', text, cxq, tdxq, tdyq, below)
+def _place(self, it, get_M, M_now, sw, sh):
+    """Choose the bubble position ONCE per line (at its start time) so it never covers any
+    face (all characters, incl. hair) for the whole time it is on screen."""
+    key = ('place', id(it))
     if key in self._cache:
         return self._cache[key]
-    bw, bh, lines, lh = self._cache[('csz', text, sp)]
-    pad = int(100 * S)
-    W_, H_ = bw + 2 * pad, bh + 2 * pad
-    ox, oy = pad, pad
-    rise = min(0.045 * bw, 0.20 * bh)          # top edge rises toward the right
-    drop = min(0.030 * bw, 0.12 * bh)          # bottom edge drops toward the right
-    lean = min(0.012 * bw, 6 * S)              # right edge leans in slightly
-    TL = (ox, oy + rise); TR = (ox + bw, oy)
-    BR = (ox + bw - lean, oy + bh); BL = (ox + lean * 0.6, oy + bh - drop)
-    r = min(24 * S, bh * 0.28)
+    S, W, H = self.S, self.W, self.H
+    bw, bh = self._comic_size(it['text'], it['sp'])
+    mats = []
+    for tt in (it['a'], (it['a'] + it['b']) / 2, it['b'] + 0.2):
+        r = get_M(it['scene'], tt) if get_M else None
+        mats.append(r[0] if r else M_now)
+    Ma = mats[0]
+    faces = FACES2.get(it['scene'], {})
+    m = 16 * S
+    raw = []
+    for Mx in mats:
+        for who, (x0, y0, x1, y1) in faces.items():
+            p0 = Mx @ np.array([x0 * sw, y0 * sh, 1.0]); p1 = Mx @ np.array([x1 * sw, y1 * sh, 1.0])
+            raw.append((min(p0[0], p1[0]), min(p0[1], p1[1]), max(p0[0], p1[0]), max(p0[1], p1[1])))
+    boxes = [(a - m, b - m, c_ + m, d + m) for a, b, c_, d in raw]
+    hud = any(h['start'] - 0.3 < it['b'] + 0.3 and h['end'] + 0.5 > it['a'] - 0.3 for h in TL_HUDS)
+    if hud:
+        boxes.append((0, 0, 790 * S, 270 * S))
+        raw.append((0, 0, 790 * S, 270 * S))
+    # speaker target: top-centre of their head box (or the anchor for off-face voices like the radio)
+    sp = it['sp']
+    if sp in faces:
+        x0, y0, x1, y1 = faces[sp]
+        q0 = Ma @ np.array([x0 * sw, y0 * sh, 1.0]); q1 = Ma @ np.array([x1 * sw, y1 * sh, 1.0])
+        fx0, fy0, fx1, fy1 = q0[0], q0[1], q1[0], q1[1]
+    else:
+        ax, ay = ANCH.get(f"{it['scene']}:{sp}", (0.5, 0.3))
+        q = Ma @ np.array([ax * sw, ay * sh, 1.0])
+        fx0, fy0, fx1, fy1 = q[0] - 10 * S, q[1] - 10 * S, q[0] + 10 * S, q[1] + 10 * S
+    hx = (fx0 + fx1) / 2
+    hy = fy0
+    # possible tail targets just OUTSIDE the speaker's head box: top-centre, left side, right side
+    targets = [(hx, fy0 - 6 * S)]
+    for fr in (0.3, 0.5, 0.7):
+        targets += [(fx0 - 8 * S, fy0 + (fy1 - fy0) * fr), (fx1 + 8 * S, fy0 + (fy1 - fy0) * fr)]
 
-    def lerp(a, b, u):
-        return (a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u)
+    def hits(r, bl):
+        return sum(max(0, min(r[2], b[2]) - max(r[0], b[0])) * max(0, min(r[3], b[3]) - max(r[1], b[1])) for b in bl)
 
-    def corner(prev, cur, nxt):
-        import math as _m
-        d1 = _m.hypot(cur[0] - prev[0], cur[1] - prev[1]); d2 = _m.hypot(nxt[0] - cur[0], nxt[1] - cur[1])
-        a = lerp(cur, prev, r / d1); b = lerp(cur, nxt, r / d2)
-        return [((1 - u) ** 2 * a[0] + 2 * (1 - u) * u * cur[0] + u * u * b[0],
-                 (1 - u) ** 2 * a[1] + 2 * (1 - u) * u * cur[1] + u * u * b[1]) for u in [k / 8 for k in range(9)]]
+    def tail_for(x, y):
+        best_t = None
+        for k, (gx, gy) in enumerate(targets):
+            bxc = min(max(gx, x + bw * 0.16), x + bw * 0.84)
+            by_ = y + bh
+            vx, vy = gx - bxc, gy - by_
+            if vy < 18 * S:
+                continue
+            L = math.hypot(vx, vy)
+            if L > (650 * S if sp in faces else 4000 * S):
+                continue
+            ux, uy = vx / L, vy / L
+            if uy < 0.3:
+                continue
+            ln = min(L, 130 * S)
+            cand = (L + (0 if k == 0 else 60 * S), bxc, (bxc + ux * ln, by_ + uy * ln))
+            if best_t is None or cand[0] < best_t[0]:
+                best_t = cand
+        return None if best_t is None else best_t[1:]
 
-    def y_on(p, qq, x):
-        return p[1] + (qq[1] - p[1]) * (x - p[0]) / (qq[0] - p[0])
-
-    half = min(max(bw * 0.06, 20 * S), 32 * S)
-    base_c = ox + min(max(cxq, half + r + 6 * S), bw - half - r - 6 * S)
-    tl_len = 62 * S
-    poly = []
-    poly += corner(BL, TL, TR)
-    if below:   # tail on the top edge, pointing up
-        xl, xr = base_c - half, base_c + half
-        tipx = xl - 6 * S if not flip else xr + 6 * S
-        tip = (tipx, y_on(TL, TR, tipx) - tl_len)
-        poly += [(xl, y_on(TL, TR, xl)), tip, (xr, y_on(TL, TR, xr))]
-    poly += corner(TL, TR, BR)
-    poly += corner(TR, BR, BL)
-    if not below:  # tail on the bottom edge (traversed right -> left), pointing down
-        xl, xr = base_c - half, base_c + half
-        tip = (base_c + tdxq, y_on(BR, BL, base_c) + tdyq)
-        poly += [(xr, y_on(BR, BL, xr)), tip, (xl, y_on(BR, BL, xl))]
-    poly += corner(BR, BL, TL)
-    ow = max(2, int(3.4 * S))
-    sx, sy = 10 * S, 8 * S
-    im = Image.new('RGBA', (W_, H_), (0, 0, 0, 0))
-    d = ImageDraw.Draw(im)
-    d.polygon([(x + sx, y + sy) for x, y in poly], fill=INK + (255,))        # hard shadow
-    d.polygon(poly, fill=(255, 255, 255, 255), outline=INK + (255,), width=ow)
-    f, tr = self.f_bub, self.track_bub
-    top = oy + (bh - lh * len(lines)) / 2 - 3 * S + (rise - drop) * 0.25
-    for i, l in enumerate(lines):
-        x = ox + (bw - tw(l, f, tr)) / 2
-        draw_tracked(d, (x, top + i * lh), l, f, INK + (255,), tr)
-    res = (np.asarray(im).astype(np.float32), (ox, oy), tip)
-    if len(self._cache) > 600:
-        self._cache.clear()
-        self._comic_size(text, sp)
+    best = None
+    step_x, step_y = 22 * S, 18 * S
+    y = 28 * S
+    while y <= H - bh - 175 * S:
+        x = 36 * S
+        while x <= W - bw - 36 * S:
+            tl = tail_for(x, y)
+            if tl is not None:
+                bxc, (tx, ty) = tl
+                body = (x - 4 * S, y - 4 * S, x + bw + 12 * S, y + bh + 12 * S)
+                tailr = (min(bxc - 30 * S, tx) , y + bh, max(bxc + 30 * S, tx), ty)
+                core = (x, y, x + bw + 10 * S, y + bh + 8 * S)
+                ov = hits(core, raw) * 50 + hits(body, boxes) * 0.2 + hits(tailr, raw) * 50
+                ideal_y = hy - 70 * S - bh
+                score = ov * 1000 + math.hypot((x + bw / 2) - hx, (y - ideal_y)) + abs(tx - hx) * 0.3
+                if best is None or score < best[0]:
+                    best = (score, x, y, bxc, tx, ty)
+            x += step_x
+        y += step_y
+    if best is None:
+        self._cache[key] = None
+        return None
+    _, x, y, bxc, tx, ty = best
+    inv = cv2.invertAffineTransform(Ma)
+    sx, sy = inv @ np.array([x, y, 1.0])
+    txs, tys = inv @ np.array([tx, ty, 1.0])
+    res = dict(sx=sx, sy=sy, tx=txs, ty=tys, cx=bxc - x, bw=bw, bh=bh, mirror=hx > x + bw / 2)
     self._cache[key] = res
     return res
 
 
+def _comic(self, text, sp, cx, tdx, tdy, mirror):
+    """Panel bubble like the reference: the side nearest the speaker is SHORT (narrow),
+    the far side TALL; soft corners, thin ink outline, hard shadow right+bottom, sharp tail."""
+    S = self.S
+    q = 6 * S
+    cxq, tdxq, tdyq = round(cx / q) * q, round(tdx / q) * q, round(tdy / q) * q
+    key = ('panel3', text, cxq, tdxq, tdyq, mirror)
+    if key in self._cache:
+        return self._cache[key]
+    bw, bh, lines, lh = self._cache[('csz', text, sp)]
+    pad = int(120 * S)
+    W_, H_ = bw + 2 * pad, bh + 2 * pad
+    ox, oy = pad, pad
+    rise = min(0.075 * bw, 0.26 * bh)    # top edge rises toward the far side
+    drop = min(0.05 * bw, 0.17 * bh)     # bottom edge drops toward the far side
+    # built with the NARROW side on the left; mirrored when the speaker is on the right
+    TL = (0, rise); TR = (bw, 0); BR = (bw, bh); BL = (0, bh - drop)
+    r = min(24 * S, bh * 0.26)
+
+    def corner(prev, cur, nxt):
+        d1 = math.hypot(cur[0] - prev[0], cur[1] - prev[1]); d2 = math.hypot(nxt[0] - cur[0], nxt[1] - cur[1])
+        a = (cur[0] + (prev[0] - cur[0]) * r / d1, cur[1] + (prev[1] - cur[1]) * r / d1)
+        b = (cur[0] + (nxt[0] - cur[0]) * r / d2, cur[1] + (nxt[1] - cur[1]) * r / d2)
+        return [((1 - u) ** 2 * a[0] + 2 * (1 - u) * u * cur[0] + u * u * b[0],
+                 (1 - u) ** 2 * a[1] + 2 * (1 - u) * u * cur[1] + u * u * b[1]) for u in [k / 8 for k in range(9)]]
+
+    body = corner(BL, TL, TR) + corner(TL, TR, BR) + corner(TR, BR, BL) + corner(BR, BL, TL)
+    if mirror:
+        body = [(bw - x, y) for x, y in body][::-1]
+        ybot = lambda x: bh - drop * (x / bw)          # mirrored bottom edge (narrow on right)
+    else:
+        ybot = lambda x: bh - drop * (1 - x / bw)
+    body = [(ox + x, oy + y) for x, y in body]
+    # tail: base on the bottom edge at cx, tip toward the speaker
+    half = min(max(bw * 0.06, 20 * S), 30 * S)
+    xl, xr = cxq - half, cxq + half
+    b_l = (ox + xl, oy + ybot(xl) - 1); b_r = (ox + xr, oy + ybot(xr) - 1)
+    tip = (ox + cxq + tdxq, oy + ybot(cxq) + tdyq)
+    # insert tail into the body outline on the bottom edge
+    poly = None
+    for i in range(len(body)):
+        p, n = body[i], body[(i + 1) % len(body)]
+        if p[1] > oy + bh * 0.6 and n[1] > oy + bh * 0.6 and min(p[0], n[0]) <= ox + cxq <= max(p[0], n[0]):
+            if p[0] > n[0]:   # edge runs right -> left
+                ins = [b_r, tip, b_l]
+            else:
+                ins = [b_l, tip, b_r]
+            poly = body[:i + 1] + ins + body[i + 1:]
+            break
+    if poly is None:
+        poly = body
+    ow = max(2, int(3.4 * S))
+    sx_, sy_ = 10 * S, 8 * S
+    im = Image.new('RGBA', (W_, H_), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.polygon([(x + sx_, y + sy_) for x, y in poly], fill=INK + (255,))
+    d.polygon(poly, fill=(255, 255, 255, 255), outline=INK + (255,), width=ow)
+    f, tr = self.f_bub, self.track_bub
+    top = oy + (bh - lh * len(lines)) / 2 - 3 * S + (rise - drop) * 0.2
+    for i, l in enumerate(lines):
+        x = ox + (bw - tw(l, f, tr)) / 2
+        draw_tracked(d, (x, top + i * lh), l, f, INK + (255,), tr)
+    res = (np.asarray(im).astype(np.float32), (ox, oy), tip)
+    if len(self._cache) > 900:
+        keep = {k: v for k, v in self._cache.items() if k[0] in ('place', 'csz', 'sub3')}
+        self._cache.clear(); self._cache.update(keep)
+    self._cache[key] = res
+    return res
+
+
+Captions._place = _place
 Captions._comic_size = _comic_size
 Captions._comic = _comic

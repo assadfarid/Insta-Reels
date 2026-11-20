@@ -45,7 +45,12 @@ def ease(x):
 
 def kenburns(shot, t):
     im = src_img(shot['img'])
-    ih, iw = im.shape[:2]
+    M = camera_M(shot, t)
+    return cv2.warpAffine(im, M, (W, H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT), M
+
+
+def camera_M(shot, t):
+    ih, iw = src_img(shot['img']).shape[:2]
     m = shot['motion']
     p = ease((t - shot['start']) / max(0.01, shot['end'] - shot['start']))
     z = m['z0'] + (m['z1'] - m['z0']) * p + 0.05   # headroom for handheld float
@@ -66,7 +71,15 @@ def kenburns(shot, t):
     M = np.array([[sc, 0, -(cx - cw / 2) * sc], [0, sc, -(cy - ch / 2) * sc]], np.float32)
     R = cv2.getRotationMatrix2D((W / 2, H / 2), rot, 1.0)
     M = (np.vstack([R, [0, 0, 1]]) @ np.vstack([M, [0, 0, 1]]))[:2].astype(np.float32)
-    return cv2.warpAffine(im, M, (W, H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT), M
+    return M
+
+
+def scene_M(scene, t):
+    for s in tl['shots']:
+        if s.get('img') == scene and s['kind'] == 'img' and s['start'] - 1 <= t <= s['end'] + 1:
+            ih, iw = src_img(scene).shape[:2]
+            return camera_M(s, t), iw, ih
+    return None
 
 
 def centered(draw, y, text, font, fill, shadow=True):
@@ -248,7 +261,7 @@ def frame_at(t):
     gr = GRAIN[int(t * FPS) % len(GRAIN)]
     out += cv2.resize(gr, (W, H), interpolation=cv2.INTER_LINEAR)[..., None]
     hud_on = any(h['start'] <= t < h['end'] + 0.4 for h in tl['huds'])
-    CAP.draw(out, t, CUR_M, hud_on)
+    CAP.draw(out, t, CUR_M, hud_on, scene_M)
     return np.clip(out, 0, 255).astype(np.uint8)
 
 
