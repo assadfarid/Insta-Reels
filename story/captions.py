@@ -4,6 +4,7 @@ Inter Bold with tight tracking. Bubbles anchor to the speaker's head (anchors.js
 normalised source-image coords) and follow the camera move via the shot's affine M.
 """
 import json, re, math
+import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
@@ -280,6 +281,30 @@ class Captions:
             if hud_active and bx < 760 * S and by < 260 * S:
                 by = 270 * S
                 below = by > hy
-            by += (1 - fade) * 10 * S
-            self._tail(out, bx, by, bw, bh, hx, hy, it['sp'], fade, below)
-            self._blend(out, arr, int(bx - m), int(by - m), fade)
+            # --- springy pop-in, gentle float, soft shrink-out -------------
+            p = (t - (it['a'] - 0.15)) / 0.42
+            if p < 1:
+                q = min(max(p, 0.0), 1.0) - 1
+                back = 1 + 2.4 * q ** 3 + 1.4 * q ** 2   # easeOutBack (overshoot ~8%)
+                sc = 0.3 + 0.7 * back
+            else:
+                sc = 1.0
+            if t > it['b']:
+                sc *= 1 - 0.18 * ease((t - it['b']) / 0.2)
+            alpha = min(1.0, max(0.0, (t - (it['a'] - 0.15)) / 0.12)) * (1 - ease((t - it['b']) / 0.2))
+            if alpha <= 0:
+                continue
+            seed = (hash(it['text']) % 97) / 15.0
+            by += math.sin((t - it['a']) * 2.1 + seed) * 3.2 * S
+            bx += math.sin((t - it['a']) * 1.3 + seed * 2) * 1.6 * S
+            ox = min(max(hx, bx + 40 * S), bx + bw - 40 * S)
+            oy = by if below else by + bh
+            sbw, sbh = bw * sc, bh * sc
+            sbx, sby = ox - (ox - bx) * sc, oy - (oy - by) * sc
+            if abs(sc - 1) > 0.01:
+                img = cv2.resize(arr, None, fx=sc, fy=sc, interpolation=cv2.INTER_LINEAR)
+            else:
+                img = arr
+            if sc > 0.55:
+                self._tail(out, sbx, sby, sbw, sbh, hx, hy, it['sp'], alpha * min(1, (sc - 0.55) / 0.3), below)
+            self._blend(out, img, int(sbx - m * sc), int(sby - m * sc), alpha)
