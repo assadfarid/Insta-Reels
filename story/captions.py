@@ -333,7 +333,9 @@ class Captions:
                 img = cv2.resize(arr, None, fx=sc, fy=sc, interpolation=cv2.INTER_LINEAR)
             else:
                 img = arr
-            tipx, tipy = bx + cx + tdx, by + ey + tdy
+            # anchor the bubble so its body stays where we placed it; tail drops toward the head
+            tipx = bx + tip[0] - px
+            tipy = by + tip[1] - py
             self._blend(out, img, int(tipx - tip[0] * sc), int(tipy - tip[1] * sc), alpha)
 
 
@@ -351,111 +353,72 @@ def _comic_size(self, text, sp):
         lines = wrap(text, f, 520 * S, tr)
         lh = int(46 * S)
         tw_ = max(tw(l, f, tr) for l in lines)
-        oval = sp in ('ELENA', 'OP')
-        if oval:
-            bw, bh = int(tw_ * 1.32 + 70 * S), int(lh * len(lines) * 1.45 + 56 * S)
-        else:
-            bw, bh = int(tw_ + 64 * S), int(lh * len(lines) + 44 * S)
+        bw, bh = int(tw_ + 84 * S), int(lh * len(lines) + 58 * S)
         self._cache[key] = (bw, bh, lines, lh)
     return self._cache[key][:2]
 
 
-def _body_points(self, bw, bh, oval, seed):
-    S = self.S
-    pts = []
-    if oval:
-        for k in range(120):
-            a = 2 * math.pi * k / 120
-            pts.append((bw / 2 + bw / 2 * math.cos(a), bh / 2 + bh / 2 * math.sin(a)))
-    else:
-        r = min(bh * 0.32, 34 * S)
-        # slightly tilted top edge and bulging bottom, like a hand-drawn panel bubble
-        corners = [(r, r, 180, 270), (bw - r, r, 270, 360), (bw - r, bh - r, 0, 90), (r, bh - r, 90, 180)]
-        for (ccx, ccy, a0, a1) in corners:
-            for k in range(13):
-                a = math.radians(a0 + (a1 - a0) * k / 12)
-                pts.append((ccx + r * math.cos(a), ccy + r * math.sin(a)))
-        tilt = 0.035 * bh
-        pts = [(x, y + tilt * (1 - x / bw) * (y < bh / 2) + 0.025 * bh * math.sin(math.pi * x / bw) * (y > bh / 2))
-               for x, y in pts]
-    # gentle hand-drawn wobble
-    out = []
-    n = len(pts)
-    for i, (x, y) in enumerate(pts):
-        w = 1.6 * S * math.sin(i * 0.9 + seed) + 1.0 * S * math.sin(i * 2.3 + seed * 1.7)
-        dx, dy = x - bw / 2, y - bh / 2
-        d = math.hypot(dx, dy) + 1e-6
-        out.append((x + dx / d * w, y + dy / d * w))
-    return out
-
-
 def _comic(self, text, sp, cx, tdx, tdy, below):
+    """Panel bubble modelled on the reference: top edge rising to the right, bottom edge
+    sloping gently down, soft corners, thin ink outline, hard black shadow right+bottom,
+    and a straight sharp tail leaving the bottom edge near one side."""
     S = self.S
-    q = 6 * S
-    cxq, tdxq, tdyq = round(cx / q) * q, round(tdx / q) * q, round(tdy / q) * q
-    key = ('comic', text, sp, cxq, tdxq, tdyq, below)
+    q = 8 * S
+    cxq = round(cx / q) * q
+    flip = tdx > 6 * S       # tail tip leans toward the speaker's side
+    key = ('panel', text, cxq, flip, below)
     if key in self._cache:
         return self._cache[key]
     bw, bh, lines, lh = self._cache[('csz', text, sp)]
-    oval = sp in ('ELENA', 'OP')
-    pad = int(95 * S)
+    pad = int(100 * S)
     W_, H_ = bw + 2 * pad, bh + 2 * pad
     ox, oy = pad, pad
-    seed = (sum(map(ord, text)) % 50) / 7.0
-    body = [(ox + x, oy + y) for x, y in self._body_points(bw, bh, oval, seed)]
-    ey = oy + (0 if below else bh)
-    if oval:  # move the tail base onto the ellipse edge
-        rel = (cxq / bw - 0.5) * 2
-        ey = oy + bh / 2 + (-1 if below else 1) * bh / 2 * math.sqrt(max(0.0, 1 - min(0.95, rel * rel)))
-    bx0 = ox + cxq
-    half = min(max(bw * 0.07, 22 * S), 34 * S)
-    inset = (14 * S) * (1 if below else -1)       # base sits slightly INSIDE the body
-    b1, b2 = (bx0 - half, ey + inset), (bx0 + half, ey + inset)
-    tip = (bx0 + tdxq, ey + tdyq)
-    # curved comic tail: one side bows outward
-    def bez(p0, c, p1, n=10):
-        return [((1 - u) ** 2 * p0[0] + 2 * (1 - u) * u * c[0] + u * u * p1[0],
-                 (1 - u) ** 2 * p0[1] + 2 * (1 - u) * u * c[1] + u * u * p1[1]) for u in [k / n for k in range(n + 1)]]
-    side = 1 if tdxq >= 0 else -1
-    c1 = ((b1[0] + tip[0]) / 2 - side * 12 * S, (b1[1] + tip[1]) / 2)
-    c2 = ((b2[0] + tip[0]) / 2 - side * 4 * S, (b2[1] + tip[1]) / 2)
-    tail = bez(b1, c1, tip) + bez(tip, c2, b2)[1:]
-    ow = max(3, int(4.5 * S))
-    sh = int(8 * S)
+    rise = min(0.045 * bw, 0.20 * bh)          # top edge rises toward the right
+    drop = min(0.030 * bw, 0.12 * bh)          # bottom edge drops toward the right
+    lean = min(0.012 * bw, 6 * S)              # right edge leans in slightly
+    TL = (ox, oy + rise); TR = (ox + bw, oy)
+    BR = (ox + bw - lean, oy + bh); BL = (ox + lean * 0.6, oy + bh - drop)
+    r = min(24 * S, bh * 0.28)
+
+    def lerp(a, b, u):
+        return (a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u)
+
+    def corner(prev, cur, nxt):
+        import math as _m
+        d1 = _m.hypot(cur[0] - prev[0], cur[1] - prev[1]); d2 = _m.hypot(nxt[0] - cur[0], nxt[1] - cur[1])
+        a = lerp(cur, prev, r / d1); b = lerp(cur, nxt, r / d2)
+        return [((1 - u) ** 2 * a[0] + 2 * (1 - u) * u * cur[0] + u * u * b[0],
+                 (1 - u) ** 2 * a[1] + 2 * (1 - u) * u * cur[1] + u * u * b[1]) for u in [k / 8 for k in range(9)]]
+
+    def y_on(p, qq, x):
+        return p[1] + (qq[1] - p[1]) * (x - p[0]) / (qq[0] - p[0])
+
+    half = min(max(bw * 0.06, 20 * S), 32 * S)
+    base_c = ox + min(max(cxq, half + r + 6 * S), bw - half - r - 6 * S)
+    tl_len = 62 * S
+    poly = []
+    poly += corner(BL, TL, TR)
+    if below:   # tail on the top edge, pointing up
+        xl, xr = base_c - half, base_c + half
+        tipx = xl - 6 * S if not flip else xr + 6 * S
+        tip = (tipx, y_on(TL, TR, tipx) - tl_len)
+        poly += [(xl, y_on(TL, TR, xl)), tip, (xr, y_on(TL, TR, xr))]
+    poly += corner(TL, TR, BR)
+    poly += corner(TR, BR, BL)
+    if not below:  # tail on the bottom edge (traversed right -> left), pointing down
+        xl, xr = base_c - half, base_c + half
+        tipx = xl - 6 * S if not flip else xr + 6 * S
+        tip = (tipx, y_on(BR, BL, tipx) + tl_len)
+        poly += [(xr, y_on(BR, BL, xr)), tip, (xl, y_on(BR, BL, xl))]
+    poly += corner(BR, BL, TL)
+    ow = max(2, int(3.4 * S))
+    sx, sy = 10 * S, 8 * S
     im = Image.new('RGBA', (W_, H_), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
-    # hard offset shadow (body + tail)
-    d.polygon([(x + sh, y + sh) for x, y in body], fill=INK + (255,))
-    d.polygon([(x + sh, y + sh) for x, y in tail], fill=INK + (255,))
-    # body and tail with thick outline
-    d.polygon(body, fill=(255, 255, 255, 255), outline=INK + (255,), width=ow)
-    d.polygon(tail, fill=(255, 255, 255, 255), outline=INK + (255,), width=ow)
-    # erase the body outline where the tail joins (white patch inside the tail's root)
-    m_ = ow * 1.7
-    d.rectangle([b1[0] + m_, ey - 2.2 * ow, b2[0] - m_, ey + 2.2 * ow], fill=(255, 255, 255, 255))
-    if oval:  # halftone dots in the lower-right, clipped to the bubble
-        mask = Image.new('L', (W_, H_), 0)
-        ImageDraw.Draw(mask).polygon(body, fill=255)
-        dots = Image.new('L', (W_, H_), 0)
-        dd = ImageDraw.Draw(dots)
-        step = 10 * S
-        y = oy
-        while y < oy + bh:
-            x = ox
-            while x < ox + bw:
-                u = ((x - ox) / bw + (y - oy) / bh) / 2
-                r = max(0.0, (u - 0.5) * 2) * 2.6 * S
-                if r > 0.4:
-                    dd.ellipse([x - r, y - r, x + r, y + r], fill=255)
-                x += step
-            y += step
-        from PIL import ImageChops
-        dots = ImageChops.multiply(dots, mask.filter(ImageFilter.MinFilter(int(ow * 2) | 1)))
-        grey = Image.new('RGBA', (W_, H_), (150, 150, 150, 255))
-        im.paste(grey, (0, 0), dots)
-    # text
+    d.polygon([(x + sx, y + sy) for x, y in poly], fill=INK + (255,))        # hard shadow
+    d.polygon(poly, fill=(255, 255, 255, 255), outline=INK + (255,), width=ow)
     f, tr = self.f_bub, self.track_bub
-    top = oy + (bh - lh * len(lines)) / 2 - 4 * S
+    top = oy + (bh - lh * len(lines)) / 2 - 3 * S + (rise - drop) * 0.25
     for i, l in enumerate(lines):
         x = ox + (bw - tw(l, f, tr)) / 2
         draw_tracked(d, (x, top + i * lh), l, f, INK + (255,), tr)
@@ -468,5 +431,4 @@ def _comic(self, text, sp, cx, tdx, tdy, below):
 
 
 Captions._comic_size = _comic_size
-Captions._body_points = _body_points
 Captions._comic = _comic
