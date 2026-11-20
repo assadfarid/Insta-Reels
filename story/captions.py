@@ -298,21 +298,21 @@ class Captions:
             below = False                      # tails always point DOWN
             # face no-go boxes (every known face in this scene, in screen coords)
             fs_ = FACE_SCALE.get(it['scene'], 1.0)
-            fhw, fhh = 120 * S * fs_, 140 * S * fs_
+            fhw, fhh = 150 * S * fs_, 175 * S * fs_
             boxes = []
             for sp_, (fx, fy) in FACES.get(it['scene'], {}).items():
                 px_, py_ = M @ np.array([fx * sw, fy * sh, 1.0])
-                boxes.append((px_ - fhw, py_ - fhh, px_ + fhw, py_ + fhh * 0.9))
+                boxes.append((px_ - fhw, py_ - fhh, px_ + fhw, py_ + fhh * 0.8))
             if hud_active:
                 boxes.append((0, 0, 780 * S, 260 * S))
             top_face = hy - fhh
             cands = [
-                (hx - bw * (0.35 if hx < W / 2 else 0.65), top_face - 30 * S - bh),   # above head
-                (hx - bw - 30 * S, top_face - 10 * S - bh * 0.6),                      # above-left
-                (hx + 30 * S, top_face - 10 * S - bh * 0.6),                           # above-right
-                (hx - fhw - 40 * S - bw, hy - bh - 70 * S),                            # left side
-                (hx + fhw + 40 * S, hy - bh - 70 * S),                                 # right side
-                (hx - bw * 0.5, top_face - 80 * S - bh),                               # higher above
+                (hx - bw * (0.35 if hx < W / 2 else 0.65), top_face - 75 * S - bh),   # above head (tail ends above hair)
+                (hx - fhw - 20 * S - bw, top_face - 40 * S - bh * 0.5),                # upper-left
+                (hx + fhw + 20 * S, top_face - 40 * S - bh * 0.5),                     # upper-right
+                (hx - fhw - 30 * S - bw, hy - bh - 80 * S),                            # left side
+                (hx + fhw + 30 * S, hy - bh - 80 * S),                                 # right side
+                (hx - bw * 0.5, top_face - 120 * S - bh),                              # higher above
             ]
             def overlap(x, y):
                 tot = 0.0
@@ -325,7 +325,7 @@ class Captions:
                 x = min(max(cx_, 40 * S), W - bw - 40 * S)
                 y = min(max(cy_, 30 * S), H - bh - 170 * S)
                 moved = abs(x - cx_) + abs(y - cy_)
-                score = overlap(x, y) * 10 + moved * 4 + k_ * 300 * S + abs((x + bw / 2) - hx) * 0.5
+                score = overlap(x, y) * 40 + moved * 4 + k_ * 300 * S + abs((x + bw / 2) - hx) * 0.5
                 if best is None or score < best[0]:
                     best = (score, x, y)
             bx, by = best[1], best[2]
