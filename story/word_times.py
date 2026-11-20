@@ -28,8 +28,6 @@ def speech_regions(path, dur):
 
 out = {}
 for ln in tl['lines']:
-    if ln['speaker'] != 'N':
-        continue
     words = ln['text'].split()
     regs = speech_regions(f"assets/lines/{ln['idx']:03d}.wav", ln['dur'])
     total = sum(e - s for s, e in regs)

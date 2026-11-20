@@ -83,7 +83,7 @@ class Captions:
                 for c in chunk(ln['text'], 84):
                     n = len(c.split())
                     ws = words[k:k + n]; k += n
-                    self.items.append({'sp': 'N', 'scene': scene, 'text': c, 'words': ws,
+                    self.items.append({'sp': 'N', 'who': sp, 'scene': scene, 'text': c, 'words': ws,
                                        'a': ws[0][1] - 0.12, 'b': ws[-1][2] + 0.35})
                 continue
             maxc = 84 if sp == 'N' else 54
@@ -98,11 +98,18 @@ class Captions:
         self._cache = {}
 
     # ---------------- rendering of individual elements (cached RGBA) ----------
-    def _subtitle(self, text):
-        key = ('sub2', text)
+    NAME = {'MIA': ('Mia:', (255, 150, 170)), 'ECHO': ('Echo:', (110, 225, 245)),
+            'ELENA': ('Dr. Elena:', (160, 195, 255)), 'OP': ('Radio:', (255, 205, 110)),
+            'TECH': ('Technician:', (240, 190, 130))}
+
+    def _subtitle(self, text, who='N'):
+        key = ('sub3', text, who)
         if key in self._cache:
             return self._cache[key]
         S, f, tr = self.S, self.f_sub, self.track_sub
+        prefix = self.NAME[who][0] + ' ' if who in self.NAME else ''
+        npre = len(prefix.split())
+        text = prefix + text
         lines = wrap(text, f, 1500 * S, tr)
         lh = int(58 * S)
         w = int(max(tw(l, f, tr) for l in lines) + 80 * S)
@@ -131,6 +138,13 @@ class Captions:
             y = 18 * S + i * lh
             draw_tracked(dw, (x, y), l, f, (255, 252, 245, 255), tr)
             draw_tracked(dg, (x, y), l, f, (120, 232, 92, 255), tr)
+        if npre:  # speaker name in its own colour, same in both layers
+            l0 = lines[0]
+            x = (w - tw(l0, f, tr)) / 2
+            col = self.NAME[who][1] + (255,)
+            draw_tracked(dw, (x, 18 * S), prefix.strip(), f, col, tr)
+            draw_tracked(dg, (x, 18 * S), prefix.strip(), f, col, tr)
+        spans = spans[npre:]
         res = (np.asarray(white).astype(np.float32), np.asarray(green).astype(np.float32), spans)
         self._cache[key] = res
         return res
@@ -257,7 +271,7 @@ class Captions:
             if fade <= 0:
                 continue
             if it['sp'] == 'N':
-                white, green, spans = self._subtitle(it['text'])
+                white, green, spans = self._subtitle(it['text'], it.get('who', 'N'))
                 lay = white.copy()
                 for (y0, y1, x0, x1), (_, ta, tb) in zip(spans, it.get('words', [])):
                     if t <= ta:
@@ -276,8 +290,8 @@ class Captions:
             M, sw, sh = shot_M[it['scene']]
             ax, ay = ANCH[key]
             hx, hy = M @ np.array([ax * sw, ay * sh, 1.0])
-            arr, m, bw, bh = self._bubble(it['text'], it['sp'])
-            gap = 70 * S
+            bw, bh = self._comic_size(it['text'], it['sp'])
+            gap = 80 * S
             below = False
             bx = hx - bw * 0.35 if hx < W / 2 else hx - bw * 0.65
             by = hy - gap - bh
@@ -293,8 +307,7 @@ class Captions:
             p = (t - (it['a'] - 0.15)) / 0.42
             if p < 1:
                 q = min(max(p, 0.0), 1.0) - 1
-                back = 1 + 2.4 * q ** 3 + 1.4 * q ** 2   # easeOutBack (overshoot ~8%)
-                sc = 0.3 + 0.7 * back
+                sc = 0.3 + 0.7 * (1 + 2.4 * q ** 3 + 1.4 * q ** 2)   # easeOutBack
             else:
                 sc = 1.0
             if t > it['b']:
@@ -302,17 +315,158 @@ class Captions:
             alpha = min(1.0, max(0.0, (t - (it['a'] - 0.15)) / 0.12)) * (1 - ease((t - it['b']) / 0.2))
             if alpha <= 0:
                 continue
-            seed = (hash(it['text']) % 97) / 15.0
+            seed = (sum(map(ord, it['text'])) % 97) / 15.0
             by += math.sin((t - it['a']) * 2.1 + seed) * 3.2 * S
             bx += math.sin((t - it['a']) * 1.3 + seed * 2) * 1.6 * S
-            ox = min(max(hx, bx + 40 * S), bx + bw - 40 * S)
-            oy = by if below else by + bh
-            sbw, sbh = bw * sc, bh * sc
-            sbx, sby = ox - (ox - bx) * sc, oy - (oy - by) * sc
+            # tail: base on the edge nearest the head, tip toward the head (limited length)
+            cx = min(max(hx - bx, bw * 0.2), bw * 0.8)
+            ey = 0 if below else bh
+            vx, vy = hx - (bx + cx), hy - (by + ey)
+            L = math.hypot(vx, vy) + 1e-6
+            tl_ = min(L - 12 * S, 70 * S)
+            tdx, tdy = vx / L * tl_, vy / L * tl_
+            if (tdy > 0) == below:      # head is not on the tail side: short straight tail
+                tdx, tdy = 0, (-40 if below else 40) * S
+            arr, (px, py), tip = self._comic(it['text'], it['sp'], cx, tdx, tdy, below)
+            # scale around the tail tip so the bubble grows out of the speaker
             if abs(sc - 1) > 0.01:
                 img = cv2.resize(arr, None, fx=sc, fy=sc, interpolation=cv2.INTER_LINEAR)
             else:
                 img = arr
-            if sc > 0.55:
-                self._tail(out, sbx, sby, sbw, sbh, hx, hy, it['sp'], alpha * min(1, (sc - 0.55) / 0.3), below)
-            self._blend(out, img, int(sbx - m * sc), int(sby - m * sc), alpha)
+            tipx, tipy = bx + cx + tdx, by + ey + tdy
+            self._blend(out, img, int(tipx - tip[0] * sc), int(tipy - tip[1] * sc), alpha)
+
+
+# ---------------------------------------------------------------------------
+#  Comic-book speech bubbles: white, thick black outline, hard offset shadow,
+#  hand-drawn wobble, curved tail. Oval + halftone for hologram / radio voices.
+# ---------------------------------------------------------------------------
+INK = (22, 20, 20)
+
+
+def _comic_size(self, text, sp):
+    key = ('csz', text, sp)
+    if key not in self._cache:
+        S, f, tr = self.S, self.f_bub, self.track_bub
+        lines = wrap(text, f, 520 * S, tr)
+        lh = int(46 * S)
+        tw_ = max(tw(l, f, tr) for l in lines)
+        oval = sp in ('ELENA', 'OP')
+        if oval:
+            bw, bh = int(tw_ * 1.32 + 70 * S), int(lh * len(lines) * 1.45 + 56 * S)
+        else:
+            bw, bh = int(tw_ + 64 * S), int(lh * len(lines) + 44 * S)
+        self._cache[key] = (bw, bh, lines, lh)
+    return self._cache[key][:2]
+
+
+def _body_points(self, bw, bh, oval, seed):
+    S = self.S
+    pts = []
+    if oval:
+        for k in range(120):
+            a = 2 * math.pi * k / 120
+            pts.append((bw / 2 + bw / 2 * math.cos(a), bh / 2 + bh / 2 * math.sin(a)))
+    else:
+        r = min(bh * 0.32, 34 * S)
+        # slightly tilted top edge and bulging bottom, like a hand-drawn panel bubble
+        corners = [(r, r, 180, 270), (bw - r, r, 270, 360), (bw - r, bh - r, 0, 90), (r, bh - r, 90, 180)]
+        for (ccx, ccy, a0, a1) in corners:
+            for k in range(13):
+                a = math.radians(a0 + (a1 - a0) * k / 12)
+                pts.append((ccx + r * math.cos(a), ccy + r * math.sin(a)))
+        tilt = 0.035 * bh
+        pts = [(x, y + tilt * (1 - x / bw) * (y < bh / 2) + 0.025 * bh * math.sin(math.pi * x / bw) * (y > bh / 2))
+               for x, y in pts]
+    # gentle hand-drawn wobble
+    out = []
+    n = len(pts)
+    for i, (x, y) in enumerate(pts):
+        w = 1.6 * S * math.sin(i * 0.9 + seed) + 1.0 * S * math.sin(i * 2.3 + seed * 1.7)
+        dx, dy = x - bw / 2, y - bh / 2
+        d = math.hypot(dx, dy) + 1e-6
+        out.append((x + dx / d * w, y + dy / d * w))
+    return out
+
+
+def _comic(self, text, sp, cx, tdx, tdy, below):
+    S = self.S
+    q = 6 * S
+    cxq, tdxq, tdyq = round(cx / q) * q, round(tdx / q) * q, round(tdy / q) * q
+    key = ('comic', text, sp, cxq, tdxq, tdyq, below)
+    if key in self._cache:
+        return self._cache[key]
+    bw, bh, lines, lh = self._cache[('csz', text, sp)]
+    oval = sp in ('ELENA', 'OP')
+    pad = int(95 * S)
+    W_, H_ = bw + 2 * pad, bh + 2 * pad
+    ox, oy = pad, pad
+    seed = (sum(map(ord, text)) % 50) / 7.0
+    body = [(ox + x, oy + y) for x, y in self._body_points(bw, bh, oval, seed)]
+    ey = oy + (0 if below else bh)
+    if oval:  # move the tail base onto the ellipse edge
+        rel = (cxq / bw - 0.5) * 2
+        ey = oy + bh / 2 + (-1 if below else 1) * bh / 2 * math.sqrt(max(0.0, 1 - min(0.95, rel * rel)))
+    bx0 = ox + cxq
+    half = min(max(bw * 0.07, 22 * S), 34 * S)
+    inset = (14 * S) * (1 if below else -1)       # base sits slightly INSIDE the body
+    b1, b2 = (bx0 - half, ey + inset), (bx0 + half, ey + inset)
+    tip = (bx0 + tdxq, ey + tdyq)
+    # curved comic tail: one side bows outward
+    def bez(p0, c, p1, n=10):
+        return [((1 - u) ** 2 * p0[0] + 2 * (1 - u) * u * c[0] + u * u * p1[0],
+                 (1 - u) ** 2 * p0[1] + 2 * (1 - u) * u * c[1] + u * u * p1[1]) for u in [k / n for k in range(n + 1)]]
+    side = 1 if tdxq >= 0 else -1
+    c1 = ((b1[0] + tip[0]) / 2 - side * 12 * S, (b1[1] + tip[1]) / 2)
+    c2 = ((b2[0] + tip[0]) / 2 - side * 4 * S, (b2[1] + tip[1]) / 2)
+    tail = bez(b1, c1, tip) + bez(tip, c2, b2)[1:]
+    ow = max(3, int(4.5 * S))
+    sh = int(8 * S)
+    im = Image.new('RGBA', (W_, H_), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    # hard offset shadow (body + tail)
+    d.polygon([(x + sh, y + sh) for x, y in body], fill=INK + (255,))
+    d.polygon([(x + sh, y + sh) for x, y in tail], fill=INK + (255,))
+    # body and tail with thick outline
+    d.polygon(body, fill=(255, 255, 255, 255), outline=INK + (255,), width=ow)
+    d.polygon(tail, fill=(255, 255, 255, 255), outline=INK + (255,), width=ow)
+    # erase the body outline where the tail joins (white patch inside the tail's root)
+    m_ = ow * 1.7
+    d.rectangle([b1[0] + m_, ey - 2.2 * ow, b2[0] - m_, ey + 2.2 * ow], fill=(255, 255, 255, 255))
+    if oval:  # halftone dots in the lower-right, clipped to the bubble
+        mask = Image.new('L', (W_, H_), 0)
+        ImageDraw.Draw(mask).polygon(body, fill=255)
+        dots = Image.new('L', (W_, H_), 0)
+        dd = ImageDraw.Draw(dots)
+        step = 10 * S
+        y = oy
+        while y < oy + bh:
+            x = ox
+            while x < ox + bw:
+                u = ((x - ox) / bw + (y - oy) / bh) / 2
+                r = max(0.0, (u - 0.5) * 2) * 2.6 * S
+                if r > 0.4:
+                    dd.ellipse([x - r, y - r, x + r, y + r], fill=255)
+                x += step
+            y += step
+        from PIL import ImageChops
+        dots = ImageChops.multiply(dots, mask.filter(ImageFilter.MinFilter(int(ow * 2) | 1)))
+        grey = Image.new('RGBA', (W_, H_), (150, 150, 150, 255))
+        im.paste(grey, (0, 0), dots)
+    # text
+    f, tr = self.f_bub, self.track_bub
+    top = oy + (bh - lh * len(lines)) / 2 - 4 * S
+    for i, l in enumerate(lines):
+        x = ox + (bw - tw(l, f, tr)) / 2
+        draw_tracked(d, (x, top + i * lh), l, f, INK + (255,), tr)
+    res = (np.asarray(im).astype(np.float32), (ox, oy), tip)
+    if len(self._cache) > 600:
+        self._cache.clear()
+        self._comic_size(text, sp)
+    self._cache[key] = res
+    return res
+
+
+Captions._comic_size = _comic_size
+Captions._body_points = _body_points
+Captions._comic = _comic
