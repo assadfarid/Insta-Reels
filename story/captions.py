@@ -12,6 +12,10 @@ INTER = 'assets/fonts/inter-latin-700-normal.woff'
 KIDS = 'assets/fonts/fredoka-latin-600-normal.woff'
 exec(open('script.py').read())  # LINES
 ANCH = json.load(open('anchors.json'))
+FACES = json.load(open('faces.json'))
+# close-up shots: faces are much bigger on screen
+FACE_SCALE = {'s03': 1.6, 's04': 1.8, 's05': 1.8, 's12': 1.8, 's32': 1.8, 's46': 1.8, 's47': 2.4,
+              's54': 1.8, 's44': 1.5, 's25': 1.4, 's07': 1.2, 's09': 1.2}
 
 
 def ease(x):
@@ -291,21 +295,40 @@ class Captions:
             ax, ay = ANCH[key]
             hx, hy = M @ np.array([ax * sw, ay * sh, 1.0])
             bw, bh = self._comic_size(it['text'], it['sp'])
-            gap = 80 * S
             below = False                      # tails always point DOWN
-            bx = hx - bw * 0.35 if hx < W / 2 else hx - bw * 0.65
-            by = hy - gap - bh
-            if by < 30 * S:
-                # no room above the head: sit beside it, bottom edge just above head level
-                by = max(30 * S, hy - bh - 20 * S)
-                if hx > W / 2:
-                    bx = hx - bw - 60 * S
-                else:
-                    bx = hx + 60 * S
-            bx = min(max(bx, 40 * S), W - bw - 40 * S)
-            by = min(max(by, 30 * S), H - bh - 170 * S)
-            if hud_active and bx < 760 * S and by < 260 * S:
-                bx = 780 * S                   # slide right of Echo's diagnostic panel
+            # face no-go boxes (every known face in this scene, in screen coords)
+            fs_ = FACE_SCALE.get(it['scene'], 1.0)
+            fhw, fhh = 120 * S * fs_, 140 * S * fs_
+            boxes = []
+            for sp_, (fx, fy) in FACES.get(it['scene'], {}).items():
+                px_, py_ = M @ np.array([fx * sw, fy * sh, 1.0])
+                boxes.append((px_ - fhw, py_ - fhh, px_ + fhw, py_ + fhh * 0.9))
+            if hud_active:
+                boxes.append((0, 0, 780 * S, 260 * S))
+            top_face = hy - fhh
+            cands = [
+                (hx - bw * (0.35 if hx < W / 2 else 0.65), top_face - 30 * S - bh),   # above head
+                (hx - bw - 30 * S, top_face - 10 * S - bh * 0.6),                      # above-left
+                (hx + 30 * S, top_face - 10 * S - bh * 0.6),                           # above-right
+                (hx - fhw - 40 * S - bw, hy - bh - 70 * S),                            # left side
+                (hx + fhw + 40 * S, hy - bh - 70 * S),                                 # right side
+                (hx - bw * 0.5, top_face - 80 * S - bh),                               # higher above
+            ]
+            def overlap(x, y):
+                tot = 0.0
+                for (x0, y0, x1, y1) in boxes:
+                    ox_ = max(0, min(x + bw, x1) - max(x, x0)); oy_ = max(0, min(y + bh + 70 * S, y1) - max(y, y0))
+                    tot += ox_ * oy_
+                return tot
+            best = None
+            for k_, (cx_, cy_) in enumerate(cands):
+                x = min(max(cx_, 40 * S), W - bw - 40 * S)
+                y = min(max(cy_, 30 * S), H - bh - 170 * S)
+                moved = abs(x - cx_) + abs(y - cy_)
+                score = overlap(x, y) * 10 + moved * 4 + k_ * 300 * S + abs((x + bw / 2) - hx) * 0.5
+                if best is None or score < best[0]:
+                    best = (score, x, y)
+            bx, by = best[1], best[2]
             # --- springy pop-in, gentle float, soft shrink-out -------------
             p = (t - (it['a'] - 0.15)) / 0.42
             if p < 1:
