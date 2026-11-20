@@ -158,7 +158,7 @@ yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
 r = np.sqrt(((xx - W / 2) / (W / 2)) ** 2 + ((yy - H / 2) / (H / 2)) ** 2)
 VIG = (1.0 - 0.28 * np.clip(r - 0.55, 0, 1) ** 1.5)[..., None].astype(np.float32)
 rng = np.random.default_rng(part)
-GRAIN = [(rng.standard_normal((H // 2, W // 2, 1)) * 5.0).astype(np.float32) for _ in range(6)]
+GRAIN = [(rng.standard_normal((H // 2, W // 2, 1)) * 2.5).astype(np.float32) for _ in range(6)]
 
 
 def shot_frame(shot, t):
@@ -205,12 +205,12 @@ total_frames = int(tl['total'] * FPS)
 per = math.ceil(total_frames / nparts)
 f0, f1 = part * per, min(total_frames, (part + 1) * per)
 enc = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}',
-                        '-r', str(FPS), '-i', '-', '-c:v', 'libx264', '-preset', 'veryfast' if FAST else 'medium',
+                        '-r', str(FPS), '-i', '-', '-c:v', 'libx264', '-preset', 'veryfast' if FAST else 'fast',
                         '-crf', '19', '-pix_fmt', 'yuv420p', '-threads', '2', '-g', str(FPS * 4),
                         f'out/part_{part}.mp4'], stdin=subprocess.PIPE)
 for f in range(f0, f1):
     enc.stdin.write(frame_at(f / FPS).tobytes())
-    if (f - f0) % 480 == 0:
+    if (f - f0) % 240 == 0:
         print(f'part {part}: {f - f0}/{f1 - f0}', flush=True)
 enc.stdin.close()
 enc.wait()
