@@ -63,12 +63,12 @@ SHAKE = [(_ln['start'] + _ln['dur'] * 0.72, LINES[_ln['idx']][0]) for _ln in tl[
 
 
 import os as _os
-CLIP_SPEED = {'s37': None, 's07': 0.85, 's39': 0.6, 's03': 'h', 's22': 'h', 's30': 'h', 's32': 'h', 's47': 'h', 's55': 'h'}      # None = stretch to fill the whole shot
+CLIP_SPEED = {'s37': None, 's07': 0.85, 's39': 0.6, 's03': 'h', 's22': 'h', 's30': 'h', 's32': 'h', 's47': 'h', 's55': 'h', 's10': 'h', 's14': 'h', 's43': 'h', 's51': 'h', 's29': 'h'}      # None = stretch to fill the whole shot
 CLIPS = {}
 for _s in tl['shots']:
     _n = _s.get('img')
     if _s['kind'] == 'img' and _n in CLIP_SPEED and _os.path.exists(f'assets/clips/{_n}.mp4') and _n not in CLIPS:
-        _cdur = {'s39': 5.0}.get(_n, 7.85 if CLIP_SPEED[_n] == 'h' else 10.0)
+        _cdur = {'s39': 5.0}.get(_n, (7.93 if _n in ('s10','s14','s43','s51','s29') else 7.85) if CLIP_SPEED[_n] == 'h' else 10.0)
         _span = _s['end'] - _s['start'] + XF
         _sp = max(0.6, min(1.0, _cdur / _span)) if CLIP_SPEED[_n] == 'h' else (CLIP_SPEED[_n] or min(1.0, _cdur / _span))
         _st = _s['start']

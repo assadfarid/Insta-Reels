@@ -356,6 +356,8 @@ def _comic_size(self, text, sp):
 
 
 MOUTHS = json.load(open('mouths.json'))
+# per-line overrides where a clip moves the speaker during the scene
+MOUTH_LINE = {'The surface is unsafe.': ([0.40, 0.33, -1], [0.33, 0.12, 0.49, 0.40])}
 
 
 def _place(self, it, get_M, M_now, sw, sh):
@@ -384,7 +386,10 @@ def _place(self, it, get_M, M_now, sw, sh):
         boxes.append((0, 0, 790 * S, 270 * S)); raw.append((0, 0, 790 * S, 270 * S))
     sp = it['sp']
     mk = f"{it['scene']}:{sp}"
-    if mk in MOUTHS:
+    if it['text'] in MOUTH_LINE:
+        (mx, my, face), _fbx = MOUTH_LINE[it['text']]
+        faces = dict(faces); faces[sp] = _fbx
+    elif mk in MOUTHS:
         mx, my, face = MOUTHS[mk]
     else:   # off-screen voice (radio): anchor point, face toward screen centre
         mx, my = ANCH.get(mk, (0.5, 0.3)); face = 1 if mx < 0.5 else -1
