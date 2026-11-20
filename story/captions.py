@@ -75,7 +75,7 @@ class Captions:
         self.W, self.H = W, H
         self.S = S = W / 1920
         self.f_sub = ImageFont.truetype(KIDS, int(48 * S))
-        self.f_bub = ImageFont.truetype(KIDS, int(38 * S))
+        self.f_bub = ImageFont.truetype(KIDS, int(34 * S))
         self.track_sub = -0.8 * S   # tight letter spacing
         self.track_bub = -0.6 * S
         self.items = []
@@ -346,14 +346,11 @@ def _comic_size(self, text, sp):
     key = ('csz', text, sp)
     if key not in self._cache:
         S, f, tr = self.S, self.f_bub, self.track_bub
-        maxw = 300 * S if len(text) < 45 else 360 * S
-        lines = wrap(text, f, maxw, tr)
-        lh = int(46 * S)
+        lines = wrap(text, f, 430 * S, tr)
+        lh = int(44 * S)
         tw_ = max(tw(l, f, tr) for l in lines)
-        bw = int(max(tw_ + 120 * S, 210 * S))
-        bh = int(lh * len(lines) + 96 * S)
-        bh = max(bh, int(bw / 1.9))          # chunky like the reference, never a thin strip
-        bw = max(bw, int(bh * 1.5))
+        bw = int(max(tw_ + 64 * S, 170 * S))
+        bh = int(lh * len(lines) + 40 * S)
         self._cache[key] = (bw, bh, lines, lh)
     return self._cache[key][:2]
 
@@ -433,7 +430,7 @@ def _place(self, it, get_M, M_now, sw, sh):
                 edge = own[2] if side > 0 else own[0]
                 bx = edge + gx * bw if side > 0 else edge - bw - gx * bw
                 by = py - bh - gy * bh - 10 * S
-                if bx < 20 * S or bx + bw > W - 20 * S or by < 18 * S or by + bh > H - 170 * S:
+                if bx < 20 * S or bx + bw > W - 20 * S or by < 40 * S or by + bh > H - 170 * S:
                     continue
                 u = 0.20 if not mirror else 0.80
                 base = (bx + u * bw, by + bh * 0.97)
@@ -441,7 +438,7 @@ def _place(self, it, get_M, M_now, sw, sh):
                 L = math.hypot(dx, dy) + 1e-6
                 if dy < 4 * S:                          # tail must not point up
                     continue
-                ln = min(max(L - 22 * S, 44 * S), 120 * S)
+                ln = min(max(L - 22 * S, 56 * S), 120 * S)
                 tip = (base[0] + dx / L * ln, base[1] + dy / L * ln)
                 body = (bx, by, bx + bw + 8 * S, by + bh + 8 * S)
                 own_ov = hits(body, [own])
@@ -462,77 +459,54 @@ def _place(self, it, get_M, M_now, sw, sh):
     return res
 
 
+TAG = {'MIA': ('Mia', (226, 96, 112)), 'ECHO': ('Echo', (38, 168, 196)), 'ELENA': ('Dr. Elena', (96, 120, 210)),
+       'OP': ('Radio', (220, 150, 40)), 'TECH': ('Technician', (150, 110, 70))}
+
+
 def _comic(self, text, sp, cx, tdx, tdy, mirror):
-    """Speech bubble traced from the user's reference: chunky panel, left side short,
-    right side tall; top edge rises to the right, bottom edge sags slightly and drops to
-    the right; softly rounded corners; thin black outline; solid black shadow on the right
-    and bottom; short sharp tail near the narrow corner whose inner edge drops almost
-    straight down. Mirrored when the speaker is on the right."""
+    """Style 4: clean white rounded bubble, soft shadow, coloured name tag on the top edge,
+    tail from the bottom edge toward the speaker's mouth."""
     S = self.S
     q_ = 6 * S
     tdxq, tdyq = round(tdx / q_) * q_, round(tdy / q_) * q_
-    key = ('ref2', text, sp, mirror, tdxq, tdyq)
+    key = ('pill', text, sp, round(cx / q_), tdxq, tdyq)
     if key in self._cache:
         return self._cache[key]
     bw, bh, lines, lh = self._cache[('csz', text, sp)]
-    w, h = float(bw), float(bh)
-    pad = int(140 * S)
+    pad = int(150 * S)
     W_, H_ = bw + 2 * pad, bh + 2 * pad
-    # reference proportions (narrow side on the LEFT)
-    TL = (0.000 * w, 0.115 * h)
-    TR = (1.000 * w, 0.000 * h)
-    BR = (0.982 * w, 1.000 * h)
-    BL = (0.030 * w, 0.935 * h)
-    r = 0.085 * h
-
-    def corner(prev, cur, nxt, rr):
-        d1 = math.hypot(cur[0] - prev[0], cur[1] - prev[1]); d2 = math.hypot(nxt[0] - cur[0], nxt[1] - cur[1])
-        a = (cur[0] + (prev[0] - cur[0]) * rr / d1, cur[1] + (prev[1] - cur[1]) * rr / d1)
-        b = (cur[0] + (nxt[0] - cur[0]) * rr / d2, cur[1] + (nxt[1] - cur[1]) * rr / d2)
-        return [((1 - u) ** 2 * a[0] + 2 * (1 - u) * u * cur[0] + u * u * b[0],
-                 (1 - u) ** 2 * a[1] + 2 * (1 - u) * u * cur[1] + u * u * b[1]) for u in [k / 10 for k in range(11)]]
-
-    def bottom(x):   # bottom edge: BL -> BR with a gentle sag
-        u = (x - BL[0]) / (BR[0] - BL[0])
-        return BL[1] + (BR[1] - BL[1]) * u + 0.018 * h * math.sin(math.pi * u)
-
-    # tail near the narrow (left) corner; inner edge almost vertical
-    tw_ = max(0.11 * w, 0.20 * h)
-    t0, t1 = 0.20 * w - tw_ / 2, 0.20 * w + tw_ / 2
-    ddx = -tdxq if mirror else tdxq        # geometry is built un-mirrored
-    tip = (0.20 * w + ddx, bottom(0.20 * w) + tdyq)
-    poly = []
-    poly += corner(BL, TL, TR, r)
-    poly += corner(TL, TR, BR, r * 0.9)
-    poly += corner(TR, BR, BL, r)
-    # bottom edge right -> left, inserting the tail
-    xs = [BR[0] - r * 1.05 + (k / 24) * ((BL[0] + r * 1.05) - (BR[0] - r * 1.05)) for k in range(25)]
-    for x in xs:
-        if x < t1 and not any(p == 'TAIL' for p in poly):
-            poly += [(t1, bottom(t1)), tip, (t0, bottom(t0)), 'TAIL']
-        if t0 <= x <= t1:
-            continue
-        poly.append((x, bottom(x)))
-    poly = [p for p in poly if p != 'TAIL']
-    poly += corner(BR, BL, TL, r)
-    if mirror:
-        poly = [(w - x, y) for x, y in poly]
-        tip = (w - tip[0], tip[1])
-    poly = [(pad + x, pad + y) for x, y in poly]
-    tip = (pad + tip[0], pad + tip[1])
-    ow = max(2, int(3.0 * S))
-    sx_, sy_ = 7 * S, 6 * S
+    ox, oy = pad, pad
+    rad = min(bh / 2, 40 * S)
+    base_x = ox + min(max(cx, rad + 14 * S), bw - rad - 14 * S)
+    half = 20 * S
+    by_ = oy + bh - 2
+    tip = (base_x + tdxq, oy + bh + tdyq)
+    lean = 1 if tdxq >= 0 else -1
+    tail = [(base_x - half, by_), (base_x + half, by_), tip]
+    # shadow
+    sh = Image.new('RGBA', (W_, H_), (0, 0, 0, 0))
+    ds = ImageDraw.Draw(sh)
+    ds.rounded_rectangle([ox + 3 * S, oy + 7 * S, ox + bw + 3 * S, oy + bh + 7 * S], rad, fill=(0, 0, 0, 80))
+    ds.polygon([(x + 3 * S, y + 7 * S) for x, y in tail], fill=(0, 0, 0, 80))
+    sh = sh.filter(ImageFilter.GaussianBlur(6 * S))
     im = Image.new('RGBA', (W_, H_), (0, 0, 0, 0))
+    im = Image.alpha_composite(im, sh)
     d = ImageDraw.Draw(im)
-    d.polygon([(x + sx_, y + sy_) for x, y in poly], fill=INK + (255,))      # solid shadow right+bottom
-    d.polygon(poly, fill=(255, 255, 255, 255))
-    d.line(poly + [poly[0]], fill=INK + (255,), width=ow, joint='curve')
+    d.polygon(tail, fill=(255, 255, 255, 250))
+    d.rounded_rectangle([ox, oy, ox + bw, oy + bh], rad, fill=(255, 255, 255, 250))
+    # name tag
+    name, col = TAG.get(sp, (sp.title(), (120, 120, 120)))
+    ft = ImageFont.truetype(KIDS, int(29 * S))
+    tw_n = ft.getlength(name)
+    tx0 = ox + 20 * S if not mirror else ox + bw - 20 * S - (tw_n + 28 * S)
+    d.rounded_rectangle([tx0, oy - 26 * S, tx0 + tw_n + 28 * S, oy + 12 * S], 18 * S, fill=col + (255,))
+    d.text((tx0 + 14 * S, oy - 25 * S), name, font=ft, fill=(255, 255, 255, 255))
     f, tr = self.f_bub, self.track_bub
-    top = pad + (h * 0.075) + (h * 0.90 - lh * len(lines)) / 2 - 2 * S
+    top = oy + (bh - lh * len(lines)) / 2 + 2 * S
     for i, l in enumerate(lines):
-        x = pad + (w - tw(l, f, tr)) / 2
-        draw_tracked(d, (x, top + i * lh), l, f, INK + (255,), tr)
-    res = (np.asarray(im).astype(np.float32), (pad, pad), tip)
+        x = ox + (bw - tw(l, f, tr)) / 2
+        draw_tracked(d, (x, top + i * lh), l, f, (45, 45, 55, 255), tr)
+    res = (np.asarray(im).astype(np.float32), (ox, oy), tip)
     if len(self._cache) > 900:
         keep = {k: v for k, v in self._cache.items() if k[0] in ('place', 'csz', 'sub3')}
         self._cache.clear(); self._cache.update(keep)
