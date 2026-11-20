@@ -190,6 +190,29 @@ def shot_frame(shot, t):
     return _fx[name].apply(fr, M, t, t - shot['start'], shot['end'] - shot['start'])
 
 
+_chap_cache = {}
+
+
+def chapter_layer(title):
+    if title in _chap_cache:
+        return _chap_cache[title]
+    num, name = title
+    f1 = ImageFont.truetype(F_HAND, int(56 * S))
+    f2 = ImageFont.truetype(F_TITLE, int(96 * S))
+    lay = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    # soft dark glow behind the text for legibility
+    glow = Image.new('L', (W, H), 0)
+    ImageDraw.Draw(glow).ellipse([W * 0.22, H * 0.30, W * 0.78, H * 0.66], fill=150)
+    glow = glow.filter(ImageFilter.GaussianBlur(70 * S))
+    lay.putalpha(glow)
+    d = ImageDraw.Draw(lay)
+    centered(d, H * 0.36, num, f1, (160, 232, 242, 255))
+    centered(d, H * 0.43, name, f2, (248, 240, 225, 255))
+    d.line([(W * 0.45, H * 0.585), (W * 0.55, H * 0.585)], fill=(160, 232, 242, 220), width=max(1, int(2 * S)))
+    _chap_cache[title] = np.asarray(lay).astype(np.float32)
+    return _chap_cache[title]
+
+
 def frame_at(t):
     global CAP
     if CAP is None:
@@ -210,6 +233,13 @@ def frame_at(t):
         if h['start'] <= t < h['end'] + 0.4:
             lay = hud_layer(h['text'], t - h['start'])
             fade = min(ease((t - h['start']) / 0.25), 1 - ease((t - h['end']) / 0.4))
+            al = lay[..., 3:4] / 255.0 * fade
+            out = out * (1 - al) + lay[..., :3] * al
+    # chapter title overlays
+    for c in tl.get('chapters', []):
+        if c['start'] - 0.1 <= t < c['end'] + 0.6:
+            fade = min(ease((t - c['start']) / 0.5), 1 - ease((t - c['end']) / 0.6))
+            lay = chapter_layer(tuple(c['title']))
             al = lay[..., 3:4] / 255.0 * fade
             out = out * (1 - al) + lay[..., :3] * al
     # global fade in/out

@@ -45,6 +45,8 @@ cur_scene, cur_shot = None, None
 prev_speaker = None
 chapter = 0
 ch_start = {}
+chapters = []
+pending_start = None
 
 for i, (scene, sp, text, hud) in enumerate(LINES):
     d = dur(f'assets/lines/{i:03d}.wav')
@@ -52,14 +54,13 @@ for i, (scene, sp, text, hud) in enumerate(LINES):
         chapter = int(scene[1:])
         # close previous image shot
         if cur_shot:
-            cur_shot['end'] = t + 0.6
-        t += 1.0
+            cur_shot['end'] = t + 0.5
+        t += 0.6
         ch_start[chapter] = t
-        title_start = t
-        # Chapter cards are silent (music only): no narrated chapter title
-        t = t + 4.2
-        shots.append({'kind': 'title', 'img': None, 'start': title_start - 0.5, 'end': t + 0.6,
-                      'chapter': chapter, 'title': CH_TITLES[chapter]})
+        # Chapter title is a short overlay on the chapter's first picture (no separate card)
+        chapters.append({'chapter': chapter, 'title': CH_TITLES[chapter], 'start': t, 'end': t + 2.6})
+        pending_start = t - 0.2
+        t += 0.9
         cur_scene, cur_shot, prev_speaker = None, None, None
         continue
 
@@ -80,7 +81,9 @@ for i, (scene, sp, text, hud) in enumerate(LINES):
         z0, z1 = random.choice([(1.0, 1.09), (1.09, 1.0), (1.03, 1.1), (1.1, 1.03)])
         motion = {'z0': z0, 'z1': z1,
                   'dx': random.uniform(-0.035, 0.035), 'dy': random.uniform(-0.02, 0.02)}
-        cur_shot = {'kind': 'img', 'img': scene, 'start': t - 0.4, 'end': None,
+        st0 = t - 0.4 if pending_start is None else pending_start
+        pending_start = None
+        cur_shot = {'kind': 'img', 'img': scene, 'start': st0, 'end': None,
                     'chapter': chapter, 'motion': motion}
         shots.append(cur_shot)
         cur_scene = scene
@@ -110,7 +113,7 @@ for m in music:
     else:
         merged.append(dict(m))
 
-json.dump({'shots': shots, 'lines': lines, 'huds': huds, 'music': merged, 'total': total},
+json.dump({'chapters': chapters, 'shots': shots, 'lines': lines, 'huds': huds, 'music': merged, 'total': total},
           open('timeline.json', 'w'), indent=1)
 print(f"total {total:.1f}s = {total/60:.2f} min, shots {len(shots)}, lines {len(lines)}, huds {len(huds)}")
 print("music:", [(m['track'], round(m['start'], 1), round(m['end'], 1)) for m in merged])
