@@ -87,7 +87,7 @@ class SceneFX:
                 frame *= (1 - dark)
             glow = cv2.resize(mask, (hw, hh), interpolation=cv2.INTER_AREA)
             glow = cv2.GaussianBlur(glow, (0, 0), 9 if self.has_eyes else 14)
-            amt = (60 if self.has_eyes else 35) * pulse * level
+            amt = (60 if self.has_eyes else 35) * pulse * level * (1 + 1.3 * getattr(self, '_talk', 0.0))
             if name in SCREEN or name in HOLO:
                 amt *= 0.8 + 0.4 * (0.5 + 0.5 * math.sin(t * 13) * math.sin(t * 7.3))
             add += glow[..., None] * np.array([40, 230, 255], np.float32) / 255 * amt
@@ -450,3 +450,140 @@ def _new_apply(self, frame, M, t, local_t, dur):
 
 SceneFX.__init__ = _new_init
 SceneFX.apply = _new_apply
+
+
+# =====================================================================
+#  Depth parallax, breathing, Mia blinking, Echo talking glow
+# =====================================================================
+import json as _json
+_F2 = _json.load(open('faces2.json'))
+_EYES = _json.load(open('eyes.json'))
+_TLJ = _json.load(open('timeline.json'))
+exec(open('script.py').read(), globals())   # LINES
+
+
+def _body_ellipse(h, w, box):
+    x0, y0, x1, y1 = box
+    fw, fh = (x1 - x0) * w, (y1 - y0) * h
+    cx = (x0 + x1) / 2 * w
+    top = y0 * h
+    bot = min(h, y1 * h + fh * 2.0)
+    m = np.zeros((h, w), np.float32)
+    cv2.ellipse(m, (int(cx), int((top + bot) / 2)), (int(fw * 0.8), int((bot - top) / 2)), 0, 0, 360, 1.0, -1)
+    yy = np.arange(h, dtype=np.float32)[:, None]
+    wgt = np.clip((bot - yy) / max(1.0, bot - top), 0, 1)
+    return m, m * wgt
+
+
+def _init_depth(self, src):
+    h, w = src.shape[:2]
+    f = w / 2720.0
+    yy = np.linspace(0, 1, h, dtype=np.float32)[:, None]
+    depth = np.repeat(0.25 + 0.5 * yy ** 1.2, w, axis=1)
+    if 'sky' in getattr(self, 'env', {}):
+        sky = cv2.resize(self.env['sky'], (w, h))
+        depth = depth * (1 - sky) + 0.08 * sky
+    self.has_chars = False
+    self.breath = {}
+    for who, box in _F2.get(self.name, {}).items():
+        body, bw_ = _body_ellipse(h, w, box)
+        depth = np.maximum(depth, body * 0.9)
+        self.breath[who] = cv2.resize(cv2.GaussianBlur(bw_, (0, 0), 12 * f), (w // 2, h // 2))
+        self.has_chars = True
+    depth = cv2.GaussianBlur(depth, (0, 0), 45 * f)
+    self.depth = cv2.resize(depth, (w // 2, h // 2), interpolation=cv2.INTER_AREA)
+    self.eyes = _EYES.get(self.name, [])
+    self.src_wh2 = (w, h)
+
+
+def _depth_motion(self, frame, M, t, lt):
+    W, H = self.W, self.H
+    hw, hh = W // 2, H // 2
+    S = W / 1920.0
+    d = _warp_mask(self.depth, M, hw, hh)
+    ph = int(self.name[1:]) * 0.7
+    P = (11 if self.has_chars else 6) * S
+    dx = (d - 0.5) * P * math.sin(t * 0.33 + ph)
+    dy = (d - 0.5) * P * 0.45 * math.sin(t * 0.27 + ph * 1.7)
+    for k, (who, bm) in enumerate(self.breath.items()):
+        b = _warp_mask(bm, M, hw, hh)
+        period = 3.8 if who == 'MIA' else 5.0
+        amp = (2.6 if who == 'MIA' else 1.6) * S
+        dy -= b * amp * math.sin(2 * math.pi * t / period + k * 1.3)
+    dxf = cv2.resize(dx.astype(np.float32), (W, H)); dyf = cv2.resize(dy.astype(np.float32), (W, H))
+    Xf, Yf = _grid(W, H)
+    return cv2.remap(frame, Xf + dxf, Yf + dyf, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+
+
+def _blink(self, frame, M, t, lt):
+    if not self.eyes:
+        return frame
+    seed = int(self.name[1:])
+    r = np.random.default_rng(seed)
+    times = np.cumsum(r.uniform(2.6, 4.8, 40)) + 0.8
+    closed = any(0 <= lt - b < 0.13 for b in times)
+    if not closed:
+        return frame
+    sw, sh = self.src_wh2
+    S = self.W / 1920.0
+    for cx, cy, rx, ry in self.eyes:
+        p = M @ np.array([cx * sw, cy * sh, 1.0])
+        sc = math.hypot(M[0, 0], M[0, 1])
+        Rx, Ry = rx * sw * sc * 1.3, ry * sh * sc * 1.3
+        x, y = int(p[0]), int(p[1])
+        # sample skin just below the eye (cheek)
+        sy0, sy1 = int(y + Ry * 1.6), int(y + Ry * 2.4)
+        sx0, sx1 = int(x - Rx * 0.6), int(x + Rx * 0.6)
+        patch = frame[max(0, sy0):max(1, sy1), max(0, sx0):max(1, sx1)]
+        if patch.size == 0:
+            continue
+        skin = np.median(patch.reshape(-1, 3), axis=0)
+        cv2.ellipse(frame, (x, y), (int(Rx), int(Ry)), 0, 0, 360, tuple(float(v) for v in skin), -1, cv2.LINE_AA)
+        cv2.ellipse(frame, (x, int(y + Ry * 0.1)), (int(Rx * 0.95), int(Ry * 0.45)), 0, 10, 170,
+                    (55.0, 38.0, 32.0), max(2, int(2.8 * S)), cv2.LINE_AA)
+    return frame
+
+
+# Echo talking glow: loudness envelope of Echo's lines
+_TALK = []
+def _load_talk():
+    import subprocess as _sp
+    for ln in _TLJ['lines']:
+        if ln['speaker'] != 'ECHO':
+            continue
+        a = np.frombuffer(_sp.check_output(['ffmpeg', '-v', 'error', '-i', f"assets/lines/{ln['idx']:03d}.wav",
+                                            '-f', 'f32le', '-ac', '1', '-ar', '2400', '-']), np.float32)
+        n = len(a) // 100
+        env = np.sqrt(np.mean(a[:n * 100].reshape(n, 100) ** 2, axis=1)) if n else np.zeros(1)
+        env = env / (env.max() + 1e-6)
+        _TALK.append((ln['start'], env, LINES[ln['idx']][0]))
+def echo_talk(t, scene):
+    if not _TALK:
+        _load_talk()
+    for st, env, sc in _TALK:
+        if sc == scene and st <= t < st + len(env) / 24.0:
+            return float(env[int((t - st) * 24)])
+    return 0.0
+
+
+_prev_init = SceneFX.__init__
+_prev_apply = SceneFX.apply
+
+
+def _init3(self, name, src, W, H):
+    _prev_init(self, name, src, W, H)
+    self._init_depth(src)
+
+
+def _apply3(self, frame, M, t, local_t, dur):
+    frame = self._depth_motion(frame, M, t, local_t)
+    self._talk = echo_talk(t, self.name)
+    frame = _prev_apply(self, frame, M, t, local_t, dur)
+    return self._blink(frame, M, t, local_t)
+
+
+SceneFX._init_depth = _init_depth
+SceneFX._depth_motion = _depth_motion
+SceneFX._blink = _blink
+SceneFX.__init__ = _init3
+SceneFX.apply = _apply3

@@ -86,7 +86,11 @@ music *= 0.32 * duck
 music[:int(2 * SR)] *= np.linspace(0, 1, int(2 * SR))
 music[-int(5 * SR):] *= np.linspace(1, 0, int(5 * SR))
 
-mix = voice + music
+sfx = load('assets/sfx.wav')
+sfx = np.pad(sfx, (0, max(0, N - len(sfx))))[:N]
+# duck effects slightly under speech too
+sfx *= (1.0 - 0.35 * np.clip(env / 0.02, 0, 1))
+mix = voice + music + sfx * 0.9
 mix /= max(1.0, np.max(np.abs(mix)) / 0.97)
 stereo = np.stack([mix, mix], axis=1).astype(np.float32)
 p = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'f32le', '-ar', str(SR), '-ac', '2', '-i', '-',

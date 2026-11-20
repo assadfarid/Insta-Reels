@@ -49,11 +49,27 @@ def kenburns(shot, t):
     return cv2.warpAffine(im, M, (W, H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT), M
 
 
+exec(open('script.py').read())
+_KEY_TXT = ["Yes, Mia. [pause] Tomorrow.", "You lied to me!", "I hate you.", "You're my family too.",
+            "[whispers] I promise.", "Echo? [shouting] Echo!", "You remember me?",
+            "I remember... that you prefer your toast unburned.", "Promise me you'll be okay."]
+KEY_PUSH = []   # (scene, start, dur)
+for _ln in tl['lines']:
+    _sc, _sp, _tx, _h = LINES[_ln['idx']]
+    if any(k in _tx for k in _KEY_TXT):
+        KEY_PUSH.append((_sc, _ln['start'], _ln['dur']))
+SHAKE = [(_ln['start'] + _ln['dur'] * 0.72, LINES[_ln['idx']][0]) for _ln in tl['lines']
+         if 'collapses onto the bridge' in LINES[_ln['idx']][2]]
+
+
 def camera_M(shot, t):
     ih, iw = src_img(shot['img']).shape[:2]
     m = shot['motion']
     p = ease((t - shot['start']) / max(0.01, shot['end'] - shot['start']))
     z = m['z0'] + (m['z1'] - m['z0']) * p + 0.05   # headroom for handheld float
+    for sc_, st_, du_ in KEY_PUSH:                  # slow push-in on emotional lines
+        if sc_ == shot['img'] and t > st_ - 0.3:
+            z *= 1 + 0.08 * ease((t - st_ + 0.3) / (du_ + 1.2))
     cw = iw / z
     ch = cw * H / W
     if ch > ih:
@@ -65,6 +81,11 @@ def camera_M(shot, t):
     cx += iw * 0.006 * (math.sin(t * 0.37 + ph) + 0.5 * math.sin(t * 0.83 + ph * 2))
     cy += ih * 0.006 * (math.sin(t * 0.29 + ph * 1.3) + 0.5 * math.sin(t * 0.71 + ph))
     rot = 0.25 * math.sin(t * 0.21 + ph)
+    for st_, sc_ in SHAKE:                          # impact shake when Echo collapses
+        if sc_ == shot['img'] and 0 <= t - st_ < 0.7:
+            k_ = (1 - (t - st_) / 0.7) ** 2
+            cx += iw * 0.006 * k_ * math.sin((t - st_) * 55)
+            cy += ih * 0.008 * k_ * math.sin((t - st_) * 47 + 1)
     cx = min(max(cx, cw / 2), iw - cw / 2)
     cy = min(max(cy, ch / 2), ih - ch / 2)
     sc = W / cw
