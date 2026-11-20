@@ -5,3 +5,4 @@ test/
 groups.txt
 urls_*.txt
 out/parts.txt
+out/voice_samples/
