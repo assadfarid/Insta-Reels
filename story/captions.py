@@ -317,6 +317,9 @@ class Captions:
             bx += math.sin((t - it['a']) * 1.3 + seed * 2) * 1.2 * S
             cx = plc['cx']
             tdx, tdy = tipx_s - (bx + cx), tipy_s - (by + bh)
+            _L = math.hypot(tdx, tdy) + 1e-6
+            if _L < 52 * S:                       # always a clearly visible tail
+                tdx, tdy = tdx * 52 * S / _L, tdy * 52 * S / _L
             arr, (px, py), tip = self._comic(it['text'], it['sp'], cx, tdx, tdy, plc['mirror'])
             if abs(sc - 1) > 0.01:
                 img = cv2.resize(arr, None, fx=sc, fy=sc, interpolation=cv2.INTER_LINEAR)
@@ -350,9 +353,13 @@ def _comic_size(self, text, sp):
     return self._cache[key][:2]
 
 
+MOUTHS = json.load(open('mouths.json'))
+
+
 def _place(self, it, get_M, M_now, sw, sh):
-    """Choose the bubble position ONCE per line (at its start time) so it never covers any
-    face (all characters, incl. hair) for the whole time it is on screen."""
+    """Bubble sits on the side the speaker FACES, a little above mouth level; its tail
+    leaves the corner nearest the speaker and points down toward the mouth, stopping
+    before the face. Never covers any face (checked over the whole time it is shown)."""
     key = ('place', id(it))
     if key in self._cache:
         return self._cache[key]
@@ -364,84 +371,110 @@ def _place(self, it, get_M, M_now, sw, sh):
         mats.append(r[0] if r else M_now)
     Ma = mats[0]
     faces = FACES2.get(it['scene'], {})
-    m = 16 * S
     raw = []
     for Mx in mats:
         for who, (x0, y0, x1, y1) in faces.items():
             p0 = Mx @ np.array([x0 * sw, y0 * sh, 1.0]); p1 = Mx @ np.array([x1 * sw, y1 * sh, 1.0])
             raw.append((min(p0[0], p1[0]), min(p0[1], p1[1]), max(p0[0], p1[0]), max(p0[1], p1[1])))
+    m = 14 * S
     boxes = [(a - m, b - m, c_ + m, d + m) for a, b, c_, d in raw]
-    hud = any(h['start'] - 0.3 < it['b'] + 0.3 and h['end'] + 0.5 > it['a'] - 0.3 for h in TL_HUDS)
-    if hud:
-        boxes.append((0, 0, 790 * S, 270 * S))
-        raw.append((0, 0, 790 * S, 270 * S))
-    # speaker target: top-centre of their head box (or the anchor for off-face voices like the radio)
+    if any(h['start'] - 0.3 < it['b'] + 0.3 and h['end'] + 0.5 > it['a'] - 0.3 for h in TL_HUDS):
+        boxes.append((0, 0, 790 * S, 270 * S)); raw.append((0, 0, 790 * S, 270 * S))
     sp = it['sp']
+    mk = f"{it['scene']}:{sp}"
+    if mk in MOUTHS:
+        mx, my, face = MOUTHS[mk]
+    else:   # off-screen voice (radio): anchor point, face toward screen centre
+        mx, my = ANCH.get(mk, (0.5, 0.3)); face = 1 if mx < 0.5 else -1
+    px, py = Ma @ np.array([mx * sw, my * sh, 1.0])
+    # speaker's own face box (screen) - tail stops at its edge
     if sp in faces:
         x0, y0, x1, y1 = faces[sp]
         q0 = Ma @ np.array([x0 * sw, y0 * sh, 1.0]); q1 = Ma @ np.array([x1 * sw, y1 * sh, 1.0])
-        fx0, fy0, fx1, fy1 = q0[0], q0[1], q1[0], q1[1]
+        fb = (min(q0[0], q1[0]), min(q0[1], q1[1]), max(q0[0], q1[0]), max(q0[1], q1[1]))
     else:
-        ax, ay = ANCH.get(f"{it['scene']}:{sp}", (0.5, 0.3))
-        q = Ma @ np.array([ax * sw, ay * sh, 1.0])
-        fx0, fy0, fx1, fy1 = q[0] - 10 * S, q[1] - 10 * S, q[0] + 10 * S, q[1] + 10 * S
-    hx = (fx0 + fx1) / 2
-    hy = fy0
-    # possible tail targets just OUTSIDE the speaker's head box: top-centre, left side, right side
-    targets = [(hx, fy0 - 6 * S)]
-    for fr in (0.3, 0.5, 0.7):
-        targets += [(fx0 - 8 * S, fy0 + (fy1 - fy0) * fr), (fx1 + 8 * S, fy0 + (fy1 - fy0) * fr)]
+        fb = (px - 5, py - 5, px + 5, py + 5)
 
     def hits(r, bl):
         return sum(max(0, min(r[2], b[2]) - max(r[0], b[0])) * max(0, min(r[3], b[3]) - max(r[1], b[1])) for b in bl)
 
-    def tail_for(x, y):
-        best_t = None
-        for k, (gx, gy) in enumerate(targets):
-            bxc = min(max(gx, x + bw * 0.16), x + bw * 0.84)
-            by_ = y + bh
-            vx, vy = gx - bxc, gy - by_
-            if vy < 18 * S:
-                continue
-            L = math.hypot(vx, vy)
-            if L > (650 * S if sp in faces else 4000 * S):
-                continue
-            ux, uy = vx / L, vy / L
-            if uy < 0.3:
-                continue
-            ln = min(L, 130 * S)
-            cand = (L + (0 if k == 0 else 60 * S), bxc, (bxc + ux * ln, by_ + uy * ln))
-            if best_t is None or cand[0] < best_t[0]:
-                best_t = cand
-        return None if best_t is None else best_t[1:]
+    def tail_tip(bx_, by_, mirror, relaxed=False):
+        u = 0.20 if not mirror else 0.80
+        base = (bx_ + u * bw, by_ + bh * 0.97)
+        dx, dy = px - base[0], py - base[1]
+        L = math.hypot(dx, dy) + 1e-6
+        if dy < (0.10 if relaxed else 0.20) * L:          # tail must clearly point DOWN
+            return None
+        ux, uy = dx / L, dy / L
+        # distance along the ray until we enter the speaker's face box
+        # tail points at the mouth and stops a little before it
+        ln = min(max(L - 34 * S, 50 * S), 140 * S)
+        if L - ln < 20 * S:
+            ln = L - 20 * S
+        if ln < 36 * S:
+            return None
+        return base, (base[0] + ux * ln, base[1] + uy * ln)
 
     best = None
-    step_x, step_y = 22 * S, 18 * S
-    y = 28 * S
-    while y <= H - bh - 175 * S:
-        x = 36 * S
-        while x <= W - bw - 36 * S:
-            tl = tail_for(x, y)
-            if tl is not None:
-                bxc, (tx, ty) = tl
-                body = (x - 4 * S, y - 4 * S, x + bw + 12 * S, y + bh + 12 * S)
-                tailr = (min(bxc - 30 * S, tx) , y + bh, max(bxc + 30 * S, tx), ty)
-                core = (x, y, x + bw + 10 * S, y + bh + 8 * S)
-                ov = hits(core, raw) * 50 + hits(body, boxes) * 0.2 + hits(tailr, raw) * 50
-                ideal_y = hy - 70 * S - bh
-                score = ov * 1000 + math.hypot((x + bw / 2) - hx, (y - ideal_y)) + abs(tx - hx) * 0.3
-                if best is None or score < best[0]:
-                    best = (score, x, y, bxc, tx, ty)
-            x += step_x
-        y += step_y
+    for compact in (False, True):
+      if compact:
+        if best is not None and best[0] < 1000 * 1000 * S:
+            break
+        f_, tr_ = self.f_bub, self.track_bub
+        lines_ = wrap(it['text'], f_, 470 * S, tr_)
+        lh_ = int(46 * S)
+        bw = int(max(max(tw(l, f_, tr_) for l in lines_) + 100 * S, 200 * S))
+        bh = int(lh_ * len(lines_) + 80 * S)
+        self._cache[('csz', it['text'], sp)] = (bw, bh, lines_, lh_)
+      for relaxed in (False, True):
+          dyr = range(-3, 14) if not relaxed else range(-8, 14)
+          for side in (face, -face):
+              mirror = side < 0          # bubble left of speaker -> narrow side (tail) on the right
+              for dxk in range(0, 16):
+                  gx = 25 * S + dxk * 22 * S
+                  bx = px + gx if side > 0 else px - gx - bw
+                  for dyk in dyr:
+                      by = py - bh - 40 * S - dyk * 20 * S
+                      if bx < 30 * S or bx + bw > W - 30 * S or by < 24 * S or by + bh > H - 175 * S:
+                          continue
+                      tt = tail_tip(bx, by, mirror, relaxed)
+                      if tt is None:
+                          continue
+                      base, tip = tt
+                      body = (bx - 4 * S, by - 4 * S, bx + bw + 12 * S, by + bh + 12 * S)
+                      tailr = (min(base[0], tip[0]) - 10 * S, base[1], max(base[0], tip[0]) + 10 * S, tip[1])
+                      ov = hits((bx, by, bx + bw + 8 * S, by + bh + 8 * S), raw) * 60 + hits(body, boxes) * 0.3
+                      score = ov * 1000 + dxk * 18 + abs(dyk - 1) * 22 + (0 if side == face else 9000) + (600 if relaxed else 0)
+                      if best is None or score < best[0]:
+                          best = (score, bx, by, base, tip, mirror, bw, bh, self._cache[('csz', it['text'], sp)])
+          pass
+    if best is None or best[0] >= 1000 * 1000 * S:
+        csz0 = self._cache[('csz', it['text'], sp)]
+        bw, bh = csz0[0], csz0[1]
+        for mirror in (False, True):
+            for by in np.arange(24 * S, H - bh - 175 * S, 20 * S):
+                for bx in np.arange(30 * S, W - bw - 30 * S, 24 * S):
+                    tt = tail_tip(bx, by, mirror, True)
+                    if tt is None:
+                        continue
+                    base, tip = tt
+                    if (base[0] < px) == mirror is False and False:
+                        pass
+                    ov = hits((bx, by, bx + bw + 8 * S, by + bh + 8 * S), raw) * 60 + \
+                        hits((min(base[0], tip[0]) - 6 * S, base[1], max(base[0], tip[0]) + 6 * S, tip[1]), raw) * 40
+                    d = math.hypot(base[0] - px, base[1] - py)
+                    score = ov * 1000 + d * 3 + 1500
+                    if best is None or score < best[0]:
+                        best = (score, bx, by, base, tip, mirror, bw, bh, csz0)
     if best is None:
         self._cache[key] = None
         return None
-    _, x, y, bxc, tx, ty = best
+    _, bx, by, base, tip, mirror, bw, bh, csz = best
+    self._cache[('csz', it['text'], sp)] = csz
     inv = cv2.invertAffineTransform(Ma)
-    sx, sy = inv @ np.array([x, y, 1.0])
-    txs, tys = inv @ np.array([tx, ty, 1.0])
-    res = dict(sx=sx, sy=sy, tx=txs, ty=tys, cx=bxc - x, bw=bw, bh=bh, mirror=hx > x + bw / 2)
+    sx, sy = inv @ np.array([bx, by, 1.0])
+    txs, tys = inv @ np.array([tip[0], tip[1], 1.0])
+    res = dict(sx=sx, sy=sy, tx=txs, ty=tys, cx=base[0] - bx, bw=bw, bh=bh, mirror=mirror)
     self._cache[key] = res
     return res
 
@@ -453,9 +486,9 @@ def _comic(self, text, sp, cx, tdx, tdy, mirror):
     and bottom; short sharp tail near the narrow corner whose inner edge drops almost
     straight down. Mirrored when the speaker is on the right."""
     S = self.S
-    lean = max(-1.0, min(1.0, tdx / max(1.0, abs(tdy) + 1)))        # -1..1, toward speaker
-    leanq = round(lean * 4) / 4
-    key = ('ref1', text, sp, mirror, leanq)
+    q_ = 6 * S
+    tdxq, tdyq = round(tdx / q_) * q_, round(tdy / q_) * q_
+    key = ('ref2', text, sp, mirror, tdxq, tdyq)
     if key in self._cache:
         return self._cache[key]
     bw, bh, lines, lh = self._cache[('csz', text, sp)]
@@ -481,9 +514,10 @@ def _comic(self, text, sp, cx, tdx, tdy, mirror):
         return BL[1] + (BR[1] - BL[1]) * u + 0.018 * h * math.sin(math.pi * u)
 
     # tail near the narrow (left) corner; inner edge almost vertical
-    t0, t1 = 0.15 * w, 0.15 * w + max(0.11 * w, 0.20 * h)
-    tl_len = 0.27 * h
-    tip = (t0 - 0.025 * w + leanq * 0.06 * w * (-1 if mirror else 1) * (-1), bottom(t0) + tl_len)
+    tw_ = max(0.11 * w, 0.20 * h)
+    t0, t1 = 0.20 * w - tw_ / 2, 0.20 * w + tw_ / 2
+    ddx = -tdxq if mirror else tdxq        # geometry is built un-mirrored
+    tip = (0.20 * w + ddx, bottom(0.20 * w) + tdyq)
     poly = []
     poly += corner(BL, TL, TR, r)
     poly += corner(TL, TR, BR, r * 0.9)
