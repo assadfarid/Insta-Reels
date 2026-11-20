@@ -8,3 +8,4 @@ out/parts.txt
 out/voice_samples/
 out/gemini_pack/
 out/gemini_pack.zip
+__pycache__/
