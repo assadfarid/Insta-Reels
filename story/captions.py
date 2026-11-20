@@ -415,57 +415,35 @@ def _place(self, it, get_M, M_now, sw, sh):
             return None
         return base, (base[0] + ux * ln, base[1] + uy * ln)
 
+    # --- bubble grows OUT of the speaker's face: right beside it on the facing side ---
+    own = fb
+    others = [r for r in raw if not (abs(r[0] - own[0]) < 2 and abs(r[1] - own[1]) < 2)]
+    csz0 = self._cache[('csz', it['text'], sp)]
+    bw, bh = csz0[0], csz0[1]
     best = None
-    for compact in (False, True):
-      if compact:
-        if best is not None and best[0] < 1000 * 1000 * S:
-            break
-        f_, tr_ = self.f_bub, self.track_bub
-        lines_ = wrap(it['text'], f_, 470 * S, tr_)
-        lh_ = int(46 * S)
-        bw = int(max(max(tw(l, f_, tr_) for l in lines_) + 100 * S, 200 * S))
-        bh = int(lh_ * len(lines_) + 80 * S)
-        self._cache[('csz', it['text'], sp)] = (bw, bh, lines_, lh_)
-      for relaxed in (False, True):
-          dyr = range(-3, 14) if not relaxed else range(-8, 14)
-          for side in (face, -face):
-              mirror = side < 0          # bubble left of speaker -> narrow side (tail) on the right
-              for dxk in range(0, 16):
-                  gx = 25 * S + dxk * 22 * S
-                  bx = px + gx if side > 0 else px - gx - bw
-                  for dyk in dyr:
-                      by = py - bh - 40 * S - dyk * 20 * S
-                      if bx < 30 * S or bx + bw > W - 30 * S or by < 24 * S or by + bh > H - 175 * S:
-                          continue
-                      tt = tail_tip(bx, by, mirror, relaxed)
-                      if tt is None:
-                          continue
-                      base, tip = tt
-                      body = (bx - 4 * S, by - 4 * S, bx + bw + 12 * S, by + bh + 12 * S)
-                      tailr = (min(base[0], tip[0]) - 10 * S, base[1], max(base[0], tip[0]) + 10 * S, tip[1])
-                      ov = hits((bx, by, bx + bw + 8 * S, by + bh + 8 * S), raw) * 60 + hits(body, boxes) * 0.3
-                      score = ov * 1000 + dxk * 18 + abs(dyk - 1) * 22 + (0 if side == face else 9000) + (600 if relaxed else 0)
-                      if best is None or score < best[0]:
-                          best = (score, bx, by, base, tip, mirror, bw, bh, self._cache[('csz', it['text'], sp)])
-          pass
-    if best is None or best[0] >= 1000 * 1000 * S:
-        csz0 = self._cache[('csz', it['text'], sp)]
-        bw, bh = csz0[0], csz0[1]
-        for mirror in (False, True):
-            for by in np.arange(24 * S, H - bh - 175 * S, 20 * S):
-                for bx in np.arange(30 * S, W - bw - 30 * S, 24 * S):
-                    tt = tail_tip(bx, by, mirror, True)
-                    if tt is None:
-                        continue
-                    base, tip = tt
-                    if (base[0] < px) == mirror is False and False:
-                        pass
-                    ov = hits((bx, by, bx + bw + 8 * S, by + bh + 8 * S), raw) * 60 + \
-                        hits((min(base[0], tip[0]) - 6 * S, base[1], max(base[0], tip[0]) + 6 * S, tip[1]), raw) * 40
-                    d = math.hypot(base[0] - px, base[1] - py)
-                    score = ov * 1000 + d * 3 + 1500
-                    if best is None or score < best[0]:
-                        best = (score, bx, by, base, tip, mirror, bw, bh, csz0)
+    for side in (face, -face):
+        mirror = side < 0
+        for gx in np.arange(-0.35, 0.9, 0.05):          # how far the bubble sits out from the face edge
+            for gy in np.arange(-0.2, 1.4, 0.1):         # bubble bottom relative to mouth (in bubble heights)
+                edge = own[2] if side > 0 else own[0]
+                bx = edge + gx * bw if side > 0 else edge - bw - gx * bw
+                by = py - bh - gy * bh - 10 * S
+                if bx < 20 * S or bx + bw > W - 20 * S or by < 18 * S or by + bh > H - 170 * S:
+                    continue
+                u = 0.20 if not mirror else 0.80
+                base = (bx + u * bw, by + bh * 0.97)
+                dx, dy = px - base[0], py - base[1]
+                L = math.hypot(dx, dy) + 1e-6
+                if dy < 4 * S:                          # tail must not point up
+                    continue
+                ln = min(max(L - 22 * S, 44 * S), 120 * S)
+                tip = (base[0] + dx / L * ln, base[1] + dy / L * ln)
+                body = (bx, by, bx + bw + 8 * S, by + bh + 8 * S)
+                own_ov = hits(body, [own])
+                oth_ov = hits(body, others)
+                score = own_ov * 80 + oth_ov * 2 + L * 6 + (0 if side == face else 1e12)
+                if best is None or score < best[0]:
+                    best = (score, bx, by, base, tip, mirror, bw, bh, csz0)
     if best is None:
         self._cache[key] = None
         return None
