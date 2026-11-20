@@ -63,19 +63,19 @@ SHAKE = [(_ln['start'] + _ln['dur'] * 0.72, LINES[_ln['idx']][0]) for _ln in tl[
 
 
 import os as _os
-CLIP_SPEED = {'s37': None, 's07': 0.85, 's39': 0.6}      # None = stretch to fill the whole shot
+CLIP_SPEED = {'s37': None, 's07': 0.85, 's39': 0.6, 's03': 'h', 's22': 'h', 's30': 'h', 's32': 'h', 's47': 'h', 's55': 'h'}      # None = stretch to fill the whole shot
 CLIPS = {}
 for _s in tl['shots']:
     _n = _s.get('img')
     if _s['kind'] == 'img' and _n in CLIP_SPEED and _os.path.exists(f'assets/clips/{_n}.mp4') and _n not in CLIPS:
-        _cdur = {'s39': 5.0}.get(_n, 10.0)
+        _cdur = {'s39': 5.0}.get(_n, 7.85 if CLIP_SPEED[_n] == 'h' else 10.0)
         _span = _s['end'] - _s['start'] + XF
-        _sp = CLIP_SPEED[_n] or min(1.0, _cdur / _span)
+        _sp = max(0.6, min(1.0, _cdur / _span)) if CLIP_SPEED[_n] == 'h' else (CLIP_SPEED[_n] or min(1.0, _cdur / _span))
         _st = _s['start']
         if _n == 's39':   # start when the narrator says "Mia holds out her hand"
             _st = [l['start'] for l in tl['lines'] if 'holds out her hand' in l['text']][0] - 0.3
         CLIPS[_n] = {'start': _st, 'speed': _sp, 'end': _st + _cdur / _sp - 0.05,
-                     'fill': CLIP_SPEED[_n] is None, 'hold': _n == 's39'}
+                     'fill': CLIP_SPEED[_n] is None, 'hold': _n == 's39' or CLIP_SPEED[_n] == 'h'}
 
 
 class _ClipReader:

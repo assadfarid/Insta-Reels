@@ -34,3 +34,6 @@ json.dump(out, open('mouths.json', 'w'), indent=1)
 exec(open('script.py').read())
 need = {f'{sc}:{sp}' for sc, sp, tx, h in LINES if sc.startswith('s') and sp in ('MIA', 'ECHO', 'TECH', 'ELENA')}
 print('missing', sorted(need - set(out)))
+
+out['s22:MIA'] = [0.21, 0.33, 1]; out['s22:ECHO'] = [0.66, 0.17, -1]
+json.dump(out, open('mouths.json', 'w'), indent=1)
