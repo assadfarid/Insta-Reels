@@ -38,9 +38,24 @@ def clean(t):
 
 random.seed(7)
 MAIN_TITLE = 4.5
-t = MAIN_TITLE
-shots = [{'kind': 'main', 'img': 's01', 'start': 0.0, 'end': MAIN_TITLE + 0.4, 'chapter': 0}]
 lines, huds = [], []
+# ---- cold-open hook: Mia's question, Echo's lie, his warning flashes ----
+_hq = [k for k, l in enumerate(LINES) if 'Is Mommy coming home tomorrow' in l[2]][0]
+_ha = [k for k, l in enumerate(LINES) if 'Yes, Mia. [pause] Tomorrow' in l[2]][0]
+t = 0.5
+hook_shot = {'kind': 'img', 'img': 's04', 'start': 0.0, 'end': None, 'chapter': 0, 'hook': True,
+             'motion': {'z0': 1.04, 'z1': 1.12, 'dx': 0.01, 'dy': 0.0}}
+_d = dur(f'assets/lines/{_hq:03d}.wav')
+lines.append({'idx': _hq, 'speaker': 'MIA', 'start': t, 'dur': _d, 'text': clean(LINES[_hq][2]), 'scene': 's04'})
+t += _d + 0.6
+_d = dur(f'assets/lines/{_ha:03d}.wav')
+lines.append({'idx': _ha, 'speaker': 'ECHO', 'start': t, 'dur': _d, 'text': clean(LINES[_ha][2]), 'scene': 's04'})
+huds.append({'text': LINES[_ha][3], 'start': t + 0.2, 'end': t + _d + 1.2})
+t += _d + 1.3
+hook_shot['end'] = t
+HOOK_END = t
+shots = [hook_shot, {'kind': 'main', 'img': 's01', 'start': HOOK_END, 'end': HOOK_END + MAIN_TITLE + 0.4, 'chapter': 0}]
+t = HOOK_END + MAIN_TITLE
 cur_scene, cur_shot = None, None
 prev_speaker = None
 chapter = 0
@@ -64,6 +79,17 @@ for i, (scene, sp, text, hud) in enumerate(LINES):
         cur_scene, cur_shot, prev_speaker = None, None, None
         continue
 
+    if clean(text) == 'The End.':
+        # separate end card after the final picture
+        t += 2.6
+        cur_shot['end'] = t + 0.3
+        shots.append({'kind': 'end', 'img': None, 'start': t, 'end': None, 'chapter': chapter})
+        t += 1.1
+        lines.append({'idx': i, 'speaker': sp, 'start': t, 'dur': d, 'text': clean(text), 'nosub': True})
+        t += d + 2.8
+        shots[-1]['end'] = t
+        cur_shot = shots[-1]
+        continue
     # gap before this line
     EMO = ('Tomorrow.', 'I promise.', 'You lied', 'I hate you', 'family too', 'Echo? [shouting]',
            'You remember me', 'toast unburned', 'Understood.', 'I do not remember')
@@ -98,7 +124,6 @@ for i, (scene, sp, text, hud) in enumerate(LINES):
     t += d
     prev_speaker = sp
 
-t += 3.0  # hold on the final image
 cur_shot['end'] = t
 total = t + 0.1
 

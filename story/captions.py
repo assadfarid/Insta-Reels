@@ -81,7 +81,9 @@ class Captions:
         self.items = []
         WT = json.load(open('word_times.json'))
         for ln in tl['lines']:
-            scene = LINES[ln['idx']][0]
+            if ln.get('nosub'):
+                continue
+            scene = ln.get('scene', LINES[ln['idx']][0])
             sp = ln['speaker']
             if sp == 'N' and str(ln['idx']) in WT:
                 words = WT[str(ln['idx'])]
@@ -360,6 +362,19 @@ MOUTHS = json.load(open('mouths.json'))
 MOUTH_LINE = {'The surface is unsafe.': ([0.40, 0.33, -1], [0.33, 0.12, 0.49, 0.40])}
 
 
+def _rdist(p, r):
+    dx = max(r[0] - p[0], 0, p[0] - r[2]); dy = max(r[1] - p[1], 0, p[1] - r[3])
+    return math.hypot(dx, dy)
+
+
+def _seg_hits(a, b, r):
+    for k in range(1, 20):
+        x = a[0] + (b[0] - a[0]) * k / 20; y = a[1] + (b[1] - a[1]) * k / 20
+        if r[0] < x < r[2] and r[1] < y < r[3]:
+            return True
+    return False
+
+
 def _place(self, it, get_M, M_now, sw, sh):
     """Bubble sits on the side the speaker FACES, a little above mouth level; its tail
     leaves the corner nearest the speaker and points down toward the mouth, stopping
@@ -431,7 +446,7 @@ def _place(self, it, get_M, M_now, sw, sh):
     for side in (face, -face):
         mirror = side < 0
         for gx in np.arange(-0.35, 0.9, 0.05):          # how far the bubble sits out from the face edge
-            for gy in np.arange(-0.2, 1.4, 0.1):         # bubble bottom relative to mouth (in bubble heights)
+            for gy in np.arange(-0.2, 4.6, 0.1):         # bubble bottom relative to mouth (in bubble heights)
                 edge = own[2] if side > 0 else own[0]
                 bx = edge + gx * bw if side > 0 else edge - bw - gx * bw
                 by = py - bh - gy * bh - 10 * S
@@ -448,7 +463,14 @@ def _place(self, it, get_M, M_now, sw, sh):
                 body = (bx, by, bx + bw + 8 * S, by + bh + 8 * S)
                 own_ov = hits(body, [own])
                 oth_ov = hits(body, others)
-                score = own_ov * 80 + oth_ov * 2 + L * 6 + (0 if side == face else 1e12)
+                # the bubble must clearly belong to the speaker: no other character's face may be
+                # nearer to it than the speaker's own face, and the tail must not cross anyone else
+                bc = (bx + bw / 2, by + bh / 2)
+                d_own = _rdist(bc, own)
+                steal = sum(1 for r in others if _rdist(bc, r) < d_own * 1.15 + 10 * S)
+                cross = sum(1 for r in others if _seg_hits(base, (px, py), r))
+                score = (own_ov * 80 + oth_ov * 2 + L * 6 + (0 if side == face else 1e12)
+                         + steal * 1e9 + cross * 1e9)
                 if best is None or score < best[0]:
                     best = (score, bx, by, base, tip, mirror, bw, bh, csz0)
     if best is None:

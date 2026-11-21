@@ -37,3 +37,6 @@ print('missing', sorted(need - set(out)))
 
 out['s22:MIA'] = [0.21, 0.33, 1]; out['s22:ECHO'] = [0.66, 0.17, -1]
 json.dump(out, open('mouths.json', 'w'), indent=1)
+
+out['s04:MIA'] = [0.86, 0.39, -1]
+json.dump(out, open('mouths.json', 'w'), indent=1)
