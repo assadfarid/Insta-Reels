@@ -141,12 +141,39 @@ class _ClipReader:
 _readers = {}
 
 
+_cmatch = {}
+CM_STRENGTH = 0.75
+
+
+def _lab_stats(img):
+    lab = cv2.cvtColor(img, cv2.COLOR_RGB2LAB).astype(np.float32)
+    return lab.reshape(-1, 3).mean(0), lab.reshape(-1, 3).std(0) + 1e-3
+
+
+def color_match(name, fr):
+    """Pull the AI clip's colour, contrast and light toward the watercolour illustration so the
+    clip sits in the same look as the still pictures around it."""
+    if name not in _cmatch:
+        ref = cv2.resize(src_img(name), (fr.shape[1], fr.shape[0]), interpolation=cv2.INTER_AREA)
+        rd = _ClipReader(f'assets/clips/{name}.mp4')
+        smp = [rd.get(k) for k in range(0, rd.n, max(1, rd.n // 6))]
+        ms = [_lab_stats(f) for f in smp if f is not None]
+        cm = np.mean([m for m, _ in ms], 0); cs = np.mean([v for _, v in ms], 0)
+        rm, rs = _lab_stats(ref)
+        _cmatch[name] = (cm, cs, rm, rs)
+    cm, cs, rm, rs = _cmatch[name]
+    lab = cv2.cvtColor(fr, cv2.COLOR_RGB2LAB).astype(np.float32)
+    out = (lab - cm) * (rs / cs) + rm
+    out = lab + (out - lab) * CM_STRENGTH
+    return cv2.cvtColor(np.clip(out, 0, 255).astype(np.uint8), cv2.COLOR_LAB2RGB)
+
+
 def clip_frame(name, t, M):
     c = CLIPS[name]
     if name not in _readers:
         _readers[name] = _ClipReader(f'assets/clips/{name}.mp4')
     rd = _readers[name]
-    fr = rd.get(max(0, int((t - c['start']) * c['speed'] * 24)))
+    fr = color_match(name, rd.get(max(0, int((t - c['start']) * c['speed'] * 24))))
     ih, iw = src_img(name).shape[:2]
     fh, fw = fr.shape[:2]
     Mv = (np.vstack([M, [0, 0, 1]]) @ np.diag([iw / fw, ih / fh, 1.0]))[:2].astype(np.float32)
@@ -217,7 +244,7 @@ def title_frame(shot):
     key = (shot['kind'], shot['chapter'])
     if key in _title_cache:
         return _title_cache[key]
-    bgname = 's01' if shot['kind'] == 'main' else first_img_of_chapter(shot['chapter'])
+    bgname = {'main': 's01', 'end': 's55'}.get(shot['kind']) or first_img_of_chapter(shot['chapter'])
     bg = Image.fromarray(cv2.resize(src_img(bgname), (W, H), interpolation=cv2.INTER_AREA))
     bg = bg.filter(ImageFilter.GaussianBlur(14 * S))
     arr = np.asarray(bg).astype(np.float32) * 0.42
@@ -226,7 +253,13 @@ def title_frame(shot):
     img = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8)).convert('RGBA')
     over = Image.new('RGBA', (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(over)
-    if shot['kind'] == 'main':
+    if shot['kind'] == 'end':
+        f2 = ImageFont.truetype('assets/fonts/fredoka-latin-600-normal.woff', int(150 * S))
+        f1 = ImageFont.truetype('assets/fonts/fredoka-latin-500-normal.woff', int(46 * S))
+        centered(d, H * 0.38, 'The End', f2, (248, 240, 225, 255))
+        d.line([(W * 0.44, H * 0.60), (W * 0.56, H * 0.60)], fill=(160, 232, 242, 220), width=max(1, int(2 * S)))
+        centered(d, H * 0.64, 'The Robot That Learned to Lie', f1, (160, 232, 242, 255))
+    elif shot['kind'] == 'main':
         f1 = ImageFont.truetype(F_HAND, int(54 * S))
         f2 = ImageFont.truetype(F_TITLE, int(120 * S))
         centered(d, H * 0.30, 'a short story', f1, (150, 225, 235, 255))
@@ -303,7 +336,7 @@ CAP = None
 
 
 def shot_frame(shot, t):
-    if shot['kind'] in ('main', 'title'):
+    if shot['kind'] in ('main', 'title', 'end'):
         base = title_frame(shot)
         # slow drift so titles aren't static
         return base
