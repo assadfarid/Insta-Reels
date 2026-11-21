@@ -37,7 +37,7 @@ def clean(t):
 
 
 random.seed(7)
-MAIN_TITLE = 6.5
+MAIN_TITLE = 4.5
 t = MAIN_TITLE
 shots = [{'kind': 'main', 'img': 's01', 'start': 0.0, 'end': MAIN_TITLE + 0.4, 'chapter': 0}]
 lines, huds = [], []
@@ -65,14 +65,18 @@ for i, (scene, sp, text, hud) in enumerate(LINES):
         continue
 
     # gap before this line
+    EMO = ('Tomorrow.', 'I promise.', 'You lied', 'I hate you', 'family too', 'Echo? [shouting]',
+           'You remember me', 'toast unburned', 'Understood.', 'I do not remember')
     if prev_speaker is None:
-        gap = 0.5
+        gap = 0.35
     elif prev_speaker == 'N' or sp == 'N':
-        gap = 0.65
-    else:
         gap = 0.4
+    else:
+        gap = 0.22
+    if any(k in text for k in EMO):
+        gap = 0.7                       # keep the emotional beats
     if scene != cur_scene and cur_scene is not None:
-        gap += 0.5
+        gap += 0.25
     t += gap
     if scene != cur_scene:
         if cur_shot:
@@ -94,7 +98,7 @@ for i, (scene, sp, text, hud) in enumerate(LINES):
     t += d
     prev_speaker = sp
 
-t += 3.5  # hold on the final image
+t += 3.0  # hold on the final image
 cur_shot['end'] = t
 total = t + 0.1
 
