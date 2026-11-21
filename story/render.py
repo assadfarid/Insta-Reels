@@ -64,6 +64,48 @@ SHAKE = [(_ln['start'] + _ln['dur'] * 0.72, LINES[_ln['idx']][0]) for _ln in tl[
 
 import os as _os
 CLIP_SPEED = {'s37': None, 's07': 0.85, 's39': 0.6, 's03': 'h', 's22': 'h', 's30': 'h', 's32': 'h', 's47': 'h', 's55': 'h', 's10': 'h', 's14': 'h', 's43': 'h', 's51': 'h', 's29': 'h', 's06': 'h', 's45': 'h'}      # None = stretch to fill the whole shot
+import re as _re
+_WT = json.load(open('word_times.json'))
+
+
+def _norm(w):
+    return _re.sub(r"[^a-z0-9']", '', w.lower())
+
+
+def phrase_time(phrase):
+    """Time the narrator (or a character) starts saying `phrase`."""
+    ph = [_norm(w) for w in phrase.split()]
+    for l in tl['lines']:
+        if phrase.lower() in l['text'].lower():
+            ws = _WT.get(str(l['idx']))
+            if ws:
+                nw = [_norm(w[0]) for w in ws]
+                for k in range(len(nw) - len(ph) + 1):
+                    if nw[k:k + len(ph)] == ph:
+                        return ws[k][1]
+            return l['start']
+    raise KeyError(phrase)
+
+
+# (phrase in the narration, second inside the clip where that action happens)
+SYNC = {
+    's03': ('slowly opens her eyes', 0.3),
+    's06': ('proudly places a plate', 2.6),
+    's07': ('You burned it again', 0.2),
+    's10': ('draws a crayon picture', 0.3),
+    's14': ('Echo rushes into the corridor', 2.4),
+    's22': ('Startled, Mia knocks', 0.2),
+    's29': ('warm golden sunlight floods', 5.3),
+    's30': ('step out into a breathtaking', 0.3),
+    's32': ('lands on Mia', 0.3),
+    's37': ('he collapses onto the bridge', 0.0),
+    's39': ('Mia holds out her hand', 0.6),
+    's43': ('Blue lights glow', 2.4),
+    's45': ('Mia takes his hand', 0.2),
+    's47': ('slowly dim to black', 4.6),
+    's51': ('cyan eyes light up', 1.5),
+    's55': ('runs to him', 0.3),
+}
 CLIPS = {}
 for _s in tl['shots']:
     _n = _s.get('img')
@@ -71,11 +113,12 @@ for _s in tl['shots']:
         _cdur = {'s39': 5.0, 's45': 1.55, 's06': 10.0}.get(_n, (7.93 if _n in ('s10','s14','s43','s51','s29') else 7.85) if CLIP_SPEED[_n] == 'h' else 10.0)
         _span = _s['end'] - _s['start'] + XF
         _sp = (0.4 if _n == 's45' else max(0.6, min(1.0, _cdur / _span))) if CLIP_SPEED[_n] == 'h' else (CLIP_SPEED[_n] or min(1.0, _cdur / _span))
-        _st = _s['start']
-        if _n == 's39':   # start when the narrator says "Mia holds out her hand"
-            _st = [l['start'] for l in tl['lines'] if 'holds out her hand' in l['text']][0] - 0.3
-        CLIPS[_n] = {'start': _st, 'speed': _sp, 'end': _st + _cdur / _sp - 0.05,
-                     'fill': CLIP_SPEED[_n] is None, 'hold': _n == 's39' or CLIP_SPEED[_n] == 'h'}
+        if _n == 's37':
+            _sp = 0.85
+        _ph, _act = SYNC.get(_n, (None, 0.0))
+        _st = (phrase_time(_ph) - _act / _sp) if _ph else _s['start']
+        CLIPS[_n] = {'start': _st, 'speed': _sp, 'end': _st + _cdur / _sp - 0.05, 'shot_start': _s['start'],
+                     'fill': False, 'hold': True, 'pre': 'still' if _n == 's37' else 'first'}
 
 
 class _ClipReader:
@@ -103,7 +146,7 @@ def clip_frame(name, t, M):
     if name not in _readers:
         _readers[name] = _ClipReader(f'assets/clips/{name}.mp4')
     rd = _readers[name]
-    fr = rd.get(int((t - c['start']) * c['speed'] * 24))
+    fr = rd.get(max(0, int((t - c['start']) * c['speed'] * 24)))
     ih, iw = src_img(name).shape[:2]
     fh, fw = fr.shape[:2]
     Mv = (np.vstack([M, [0, 0, 1]]) @ np.diag([iw / fw, ih / fh, 1.0]))[:2].astype(np.float32)
@@ -266,25 +309,20 @@ def shot_frame(shot, t):
         return base
     name = shot['img']
     ih, iw = src_img(name).shape[:2]
-    if name in CLIPS and CLIPS[name]['hold'] and t >= CLIPS[name]['start']:
+    if name in CLIPS:
         c = CLIPS[name]
         M = camera_M(shot, t)
         CUR_M[name] = (M, iw, ih)
-        return clip_frame(name, min(t, c['end']), M).astype(np.float32)
-    if name in CLIPS and CLIPS[name]['start'] <= t < CLIPS[name]['end'] + 1.0:
-        c = CLIPS[name]
-        M = camera_M(shot, t)
-        CUR_M[name] = (M, iw, ih)
-        vid = clip_frame(name, min(t, c['end']), M).astype(np.float32)
-        if c['fill'] or t < c['end']:
+        if t >= c['start'] or c['pre'] == 'first':
+            vid = clip_frame(name, min(max(t, c['start']), c['end']), M).astype(np.float32)
+            if c['pre'] == 'still' and t < c['start'] + 0.4:
+                a = ease((t - c['start']) / 0.4)
+                fr, M2 = kenburns(shot, t)
+                if name not in _fx:
+                    _fx[name] = SceneFX(name, src_img(name), W, H)
+                still = _fx[name].apply(fr.astype(np.float32), M2, t, t - shot['start'], shot['end'] - shot['start'])
+                return vid * a + still * (1 - a)
             return vid
-        # blend from the video into the living illustration over 1s
-        a = ease((t - c['end']) / 1.0)
-        fr, M = kenburns(shot, t)
-        if name not in _fx:
-            _fx[name] = SceneFX(name, src_img(name), W, H)
-        still = _fx[name].apply(fr.astype(np.float32), M, t, t - shot['start'], shot['end'] - shot['start'])
-        return vid * (1 - a) + still * a
     fr, M = kenburns(shot, t)
     fr = fr.astype(np.float32)
     CUR_M[name] = (M, iw, ih)
