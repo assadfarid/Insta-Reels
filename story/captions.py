@@ -469,7 +469,7 @@ def _place(self, it, get_M, M_now, sw, sh):
                 L = math.hypot(dx, dy) + 1e-6
                 if dy < 0.45 * L:                       # tail must clearly point DOWN (no flat tails)
                     continue
-                ln = min(max(L - 22 * S, 56 * S), 120 * S)
+                ln = min(max(L - 22 * S, 30 * S), 58 * S, 0.5 * bh + 22 * S)   # short tail, scaled to bubble
                 tip = (base[0] + dx / L * ln, base[1] + dy / L * ln)
                 body = (bx, by, bx + bw + 8 * S, by + bh + 8 * S)
                 own_ov = hits(body, [own]) + 0.001 * hits(body, [(own[0] - m, own[1] - m, own[2] + m, own[3] + m)])
@@ -523,7 +523,7 @@ def _comic(self, text, sp, cx, tdx, tdy, mirror):
     ox, oy = pad, pad
     rad = min(bh / 2, 40 * S)
     base_x = ox + min(max(cx, rad + 14 * S), bw - rad - 14 * S)
-    half = 20 * S
+    half = max(8 * S, min(13 * S, bh * 0.12))     # slim tail, scaled to bubble
     by_ = oy + bh - 2
     tip = (base_x + tdxq, oy + bh + tdyq)
     lean = 1 if tdxq >= 0 else -1
