@@ -63,7 +63,7 @@ SHAKE = [(_ln['start'] + _ln['dur'] * 0.72, LINES[_ln['idx']][0]) for _ln in tl[
 
 
 import os as _os
-CLIP_SPEED = {'s37': None, 's07': 0.85, 's39': 0.6, 's03': 'h', 's22': 'h', 's30': 'h', 's32': 'h', 's47': 'h', 's55': 'h', 's10': 'h', 's14': 'h', 's43': 'h', 's51': 'h', 's29': 'h', 's06': 'h', 's45': 'h'}      # None = stretch to fill the whole shot
+CLIP_SPEED = {'s37': None, 's07': 0.85, 's39': 0.6, 's03': 'h', 's22': 'h', 's30': 'h', 's32': 'h', 's47': 'h', 's55': 'h', 's10': 'h', 's14': 'h', 's43': 'h', 's51': 'h', 's29': 'h', 's06': 'h', 's45': 'h', 's21': 'h', 's48': 'h'}      # None = stretch to fill the whole shot
 import re as _re
 _WT = json.load(open('word_times.json'))
 
@@ -101,7 +101,9 @@ SYNC = {
     's37': ('he collapses onto the bridge', 0.0),
     's39': ('Mia holds out her hand', 0.6),
     's43': ('Blue lights glow', 2.4),
-    's45': ('Mia takes his hand', 0.2),
+    's45': ('Mia takes his hand', 4.9),
+    's48': ('headlights', 1.6),
+    's21': ("If you're watching this", 0.4),
     's47': ('slowly dim to black', 4.6),
     's51': ('cyan eyes light up', 1.5),
     's55': ('runs to him', 0.3),
@@ -110,9 +112,9 @@ CLIPS = {}
 for _s in tl['shots']:
     _n = _s.get('img')
     if _s['kind'] == 'img' and _n in CLIP_SPEED and _os.path.exists(f'assets/clips/{_n}.mp4') and _n not in CLIPS:
-        _cdur = {'s39': 5.0, 's45': 1.55, 's06': 10.0}.get(_n, (7.93 if _n in ('s10','s14','s43','s51','s29') else 7.85) if CLIP_SPEED[_n] == 'h' else 10.0)
+        _cdur = {'s39': 5.0, 's06': 10.0}.get(_n, (7.93 if _n in ('s10','s14','s43','s51','s29') else 7.85) if CLIP_SPEED[_n] == 'h' else 10.0)
         _span = _s['end'] - _s['start'] + XF
-        _sp = (0.4 if _n == 's45' else max(0.6, min(1.0, _cdur / _span))) if CLIP_SPEED[_n] == 'h' else (CLIP_SPEED[_n] or min(1.0, _cdur / _span))
+        _sp = max(0.6, min(1.0, _cdur / _span)) if CLIP_SPEED[_n] == 'h' else (CLIP_SPEED[_n] or min(1.0, _cdur / _span))
         if _n == 's37':
             _sp = 0.85
         _ph, _act = SYNC.get(_n, (None, 0.0))
