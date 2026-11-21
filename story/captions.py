@@ -390,15 +390,18 @@ def _place(self, it, get_M, M_now, sw, sh):
         mats.append(r[0] if r else M_now)
     Ma = mats[0]
     faces = FACES2.get(it['scene'], {})
-    raw = []
+    raw, who_raw = [], []
     for Mx in mats:
         for who, (x0, y0, x1, y1) in faces.items():
             p0 = Mx @ np.array([x0 * sw, y0 * sh, 1.0]); p1 = Mx @ np.array([x1 * sw, y1 * sh, 1.0])
             raw.append((min(p0[0], p1[0]), min(p0[1], p1[1]), max(p0[0], p1[0]), max(p0[1], p1[1])))
-    m = 14 * S
+            who_raw.append(who)
+    m = 22 * S
     boxes = [(a - m, b - m, c_ + m, d + m) for a, b, c_, d in raw]
     if any(h['start'] - 0.3 < it['b'] + 0.3 and h['end'] + 0.5 > it['a'] - 0.3 for h in TL_HUDS):
-        boxes.append((0, 0, 790 * S, 270 * S)); raw.append((0, 0, 790 * S, 270 * S))
+        HUDB = [(0, 0, 820 * S, 290 * S)]
+    else:
+        HUDB = []
     sp = it['sp']
     mk = f"{it['scene']}:{sp}"
     if it['text'] in MOUTH_LINE:
@@ -439,38 +442,39 @@ def _place(self, it, get_M, M_now, sw, sh):
 
     # --- bubble grows OUT of the speaker's face: right beside it on the facing side ---
     own = fb
-    others = [r for r in raw if not (abs(r[0] - own[0]) < 2 and abs(r[1] - own[1]) < 2)]
+    others = [r for r, w in zip(raw, who_raw) if w != sp and w != 'PHOTO']
+    photos = [r for r, w in zip(raw, who_raw) if w == 'PHOTO']
     csz0 = self._cache[('csz', it['text'], sp)]
     bw, bh = csz0[0], csz0[1]
     best = None
     for side in (face, -face):
         mirror = side < 0
-        for gx in np.arange(-0.35, 0.9, 0.05):          # how far the bubble sits out from the face edge
+        for gx in np.arange(-1.05, 0.9, 0.05):          # how far the bubble sits out from the face edge
             for gy in np.arange(-0.2, 4.6, 0.1):         # bubble bottom relative to mouth (in bubble heights)
                 edge = own[2] if side > 0 else own[0]
                 bx = edge + gx * bw if side > 0 else edge - bw - gx * bw
                 by = py - bh - gy * bh - 10 * S
-                if bx < 20 * S or bx + bw > W - 20 * S or by < 40 * S or by + bh > H - 170 * S:
+                if bx < 60 * S or bx + bw > W - 60 * S or by < 70 * S or by + bh > H - 170 * S:
                     continue
                 u = 0.20 if not mirror else 0.80
                 base = (bx + u * bw, by + bh * 0.97)
                 dx, dy = px - base[0], py - base[1]
                 L = math.hypot(dx, dy) + 1e-6
-                if dy < 4 * S:                          # tail must not point up
+                if dy < 0.45 * L:                       # tail must clearly point DOWN (no flat tails)
                     continue
                 ln = min(max(L - 22 * S, 56 * S), 120 * S)
                 tip = (base[0] + dx / L * ln, base[1] + dy / L * ln)
                 body = (bx, by, bx + bw + 8 * S, by + bh + 8 * S)
-                own_ov = hits(body, [own])
-                oth_ov = hits(body, others)
+                own_ov = hits(body, [(own[0] - m, own[1] - m, own[2] + m, own[3] + m)])
+                oth_ov = hits(body, others + photos)
                 # the bubble must clearly belong to the speaker: no other character's face may be
                 # nearer to it than the speaker's own face, and the tail must not cross anyone else
                 bc = (bx + bw / 2, by + bh / 2)
                 d_own = _rdist(bc, own)
                 steal = sum(1 for r in others if _rdist(bc, r) < d_own * 1.15 + 10 * S)
                 cross = sum(1 for r in others if _seg_hits(base, (px, py), r))
-                score = (own_ov * 80 + oth_ov * 2 + L * 6 + (0 if side == face else 1e12)
-                         + steal * 1e9 + cross * 1e9)
+                score = (own_ov * 1e7 + oth_ov * 1e7 + L * 6 + (0 if side == face else 1e8)
+                         + steal * 1e9 + cross * 1e9 + hits(body, HUDB) * 1e6)
                 if best is None or score < best[0]:
                     best = (score, bx, by, base, tip, mirror, bw, bh, csz0)
     if best is None:

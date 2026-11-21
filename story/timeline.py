@@ -50,7 +50,7 @@ lines.append({'idx': _hq, 'speaker': 'MIA', 'start': t, 'dur': _d, 'text': clean
 t += _d + 0.6
 _d = dur(f'assets/lines/{_ha:03d}.wav')
 lines.append({'idx': _ha, 'speaker': 'ECHO', 'start': t, 'dur': _d, 'text': clean(LINES[_ha][2]), 'scene': 's04'})
-huds.append({'text': LINES[_ha][3], 'start': t + 0.2, 'end': t + _d + 1.2})
+huds.append({'text': [l[3] for l in LINES if l[3] and 'CONTRADICTS' in l[3]][0], 'start': t + 0.2, 'end': t + _d + 1.2})
 t += _d + 1.3
 hook_shot['end'] = t
 HOOK_END = t

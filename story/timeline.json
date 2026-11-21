@@ -2080,7 +2080,7 @@
  ],
  "huds": [
   {
-   "text": null,
+   "text": "WARNING:\nSTATEMENT CONTRADICTS KNOWN FACTS",
    "start": 3.311361,
    "end": 6.579048
   },
