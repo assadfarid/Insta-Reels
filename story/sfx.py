@@ -134,7 +134,7 @@ for s in tl['shots']:
     if s['kind'] == 'img':
         shots.setdefault(s['img'], []).append((s['start'], s['end']))
 
-UNDER = [f's{i:02d}' for i in range(1, 29)]
+UNDER = [f's{i:02d}' for i in range(1, 29)] + ['s56']
 OUTDOOR_BIRDS = ['s30', 's31', 's32', 's33', 's34', 's35', 's49']
 WIND = ['s30', 's33', 's34', 's36', 's37', 's38', 's39', 's40', 's49']
 WATER = ['s30', 's36', 's39', 's40', 's49']

@@ -378,6 +378,10 @@ def _seg_hits(a, b, r):
     return False
 
 
+import os as _os
+_dbg = []
+
+
 def _place(self, it, get_M, M_now, sw, sh):
     """Bubble sits on the side the speaker FACES, a little above mouth level; its tail
     leaves the corner nearest the speaker and points down toward the mouth, stopping
@@ -468,18 +472,25 @@ def _place(self, it, get_M, M_now, sw, sh):
                 ln = min(max(L - 22 * S, 56 * S), 120 * S)
                 tip = (base[0] + dx / L * ln, base[1] + dy / L * ln)
                 body = (bx, by, bx + bw + 8 * S, by + bh + 8 * S)
-                own_ov = hits(body, [(own[0] - m, own[1] - m, own[2] + m, own[3] + m)])
+                own_ov = hits(body, [own]) + 0.001 * hits(body, [(own[0] - m, own[1] - m, own[2] + m, own[3] + m)])
                 oth_ov = hits(body, others + photos)
                 # the bubble must clearly belong to the speaker: no other character's face may be
                 # nearer to it than the speaker's own face, and the tail must not cross anyone else
                 bc = (bx + bw / 2, by + bh / 2)
                 d_own = _rdist(bc, own)
-                steal = sum(1 for r in others if _rdist(bc, r) < d_own * 1.15 + 10 * S)
+                d_oth = min([_rdist(bc, r) for r in others], default=1e9)
+                ratio = (d_oth + 1) / (d_own + 25 * S)
+                steal = max(0.0, 1.35 - ratio)          # graded: how much the bubble looks like someone else's
                 cross = sum(1 for r in others if _seg_hits(base, (px, py), r))
                 score = (own_ov * 1e7 + oth_ov * 1e7 + L * 6 + (0 if side == face else 1e8)
                          + steal * 1e9 + cross * 1e9 + hits(body, HUDB) * 1e6)
+                if _os.environ.get('BUBDBG') == it['text']:
+                    _dbg.append((round(score/1e6,1), side, round(own_ov), round(oth_ov), round(steal,2), cross, round(bx), round(by)))
                 if best is None or score < best[0]:
                     best = (score, bx, by, base, tip, mirror, bw, bh, csz0)
+    if _os.environ.get('BUBDBG') == it['text']:
+        _dbg.sort(); print('own',[round(v) for v in own],'mouth',round(px),round(py)); [print(d) for d in _dbg[:6]]
+        print('best far side', sorted([d for d in _dbg if d[1]!=face])[:3])
     if best is None:
         self._cache[key] = None
         return None
