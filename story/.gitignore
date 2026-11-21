@@ -1,0 +1,11 @@
+assets/
+out/*.mp4
+out/log_*
+test/
+groups.txt
+urls_*.txt
+out/parts.txt
+out/voice_samples/
+out/gemini_pack/
+out/gemini_pack.zip
+__pycache__/
