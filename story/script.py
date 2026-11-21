@@ -31,7 +31,7 @@ LINES = [
 ("s08","N","Echo tilts his head. Later, they play chess. When Echo looks away... Mia secretly moves one of his pieces.",None),
 ("s08","ECHO","You are cheating.",None),
 ("s08","MIA","[mischievously] Prove it.",None),
-("s09","N","Echo looks directly at the moved piece, his eyes narrowing... then he deliberately moves another piece, letting Mia win.",None),
+("s08","N","Echo looks directly at the moved piece, his eyes narrowing... then he deliberately moves another piece, letting Mia win.",None),
 ("s09","MIA","[excited] Checkmate!",None),
 ("s09","ECHO","An unexpected defeat.",None),
 ("s10","N","[warmly] Mia celebrates, and Echo's eyes curve into a smile. Afterward, Mia draws a crayon picture of herself, Echo, and her mother, holding hands beneath a bright sun.",None),
@@ -73,7 +73,7 @@ LINES = [
 # ---------- CHAPTER 5 ----------
 ("t5","N","[sad] Chapter Five. The Truth Hurts.",None),
 ("s24","N","[sad] Mia sits alone on her bed, hugging her red scarf. Echo approaches the closed door, carrying a small dinner tray.",None),
-("s25","ECHO","[softly] Mia. Your dinner is ready. [pause] I did not burn the toast.",None),
+("s24","ECHO","[softly] Mia. Your dinner is ready. [pause] I did not burn the toast.",None),
 ("s24","MIA","[crying] Go away.",None),
 ("s25","N","Echo slowly lowers the tray, and sits down against the closed door.",None),
 ("s24","MIA","[sad] You said robots can't lie.",None),

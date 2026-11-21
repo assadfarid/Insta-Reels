@@ -51,8 +51,8 @@
     "Chapter Six",
     "The World Outside"
    ],
-   "start": 343.3156000000002,
-   "end": 345.9156000000002
+   "start": 342.8156000000002,
+   "end": 345.4156000000002
   },
   {
    "chapter": 7,
@@ -60,8 +60,8 @@
     "Chapter Seven",
     "One Last Journey"
    ],
-   "start": 419.0881830000001,
-   "end": 421.6881830000001
+   "start": 418.5881830000001,
+   "end": 421.1881830000001
   },
   {
    "chapter": 8,
@@ -69,8 +69,8 @@
     "Chapter Eight",
     "The Final Transmission"
    ],
-   "start": 493.458793,
-   "end": 496.05879300000004
+   "start": 492.958793,
+   "end": 495.55879300000004
   },
   {
    "chapter": 9,
@@ -78,8 +78,8 @@
     "Chapter Nine",
     "Tomorrow Finally Comes"
    ],
-   "start": 580.1013789999996,
-   "end": 582.7013789999996
+   "start": 579.6013789999996,
+   "end": 582.2013789999996
   }
  ],
  "shots": [
@@ -212,7 +212,7 @@
    "kind": "img",
    "img": "s08",
    "start": 103.51507900000003,
-   "end": 115.78240400000006,
+   "end": 124.45165600000006,
    "chapter": 2,
    "motion": {
     "z0": 1.09,
@@ -224,7 +224,7 @@
   {
    "kind": "img",
    "img": "s09",
-   "start": 114.98240400000005,
+   "start": 123.65165600000005,
    "end": 127.93517000000006,
    "chapter": 2,
    "motion": {
@@ -459,7 +459,7 @@
    "kind": "img",
    "img": "s24",
    "start": 283.9398170000002,
-   "end": 294.3571410000001,
+   "end": 301.45394400000015,
    "chapter": 5,
    "motion": {
     "z0": 1.03,
@@ -471,8 +471,8 @@
   {
    "kind": "img",
    "img": "s25",
-   "start": 293.5571410000002,
-   "end": 299.24478300000015,
+   "start": 300.6539440000002,
+   "end": 306.3887970000001,
    "chapter": 5,
    "motion": {
     "z0": 1.09,
@@ -484,8 +484,8 @@
   {
    "kind": "img",
    "img": "s24",
-   "start": 298.4447830000002,
-   "end": 301.95394400000015,
+   "start": 305.58879700000017,
+   "end": 308.8450100000002,
    "chapter": 5,
    "motion": {
     "z0": 1.09,
@@ -497,8 +497,8 @@
   {
    "kind": "img",
    "img": "s25",
-   "start": 301.1539440000002,
-   "end": 306.8887970000001,
+   "start": 308.0450100000002,
+   "end": 310.5045790000002,
    "chapter": 5,
    "motion": {
     "z0": 1.09,
@@ -510,8 +510,8 @@
   {
    "kind": "img",
    "img": "s24",
-   "start": 306.08879700000017,
-   "end": 309.3450100000002,
+   "start": 309.70457900000025,
+   "end": 312.4581840000002,
    "chapter": 5,
    "motion": {
     "z0": 1.1,
@@ -523,8 +523,8 @@
   {
    "kind": "img",
    "img": "s25",
-   "start": 308.5450100000002,
-   "end": 311.0045790000002,
+   "start": 311.65818400000023,
+   "end": 321.33290100000016,
    "chapter": 5,
    "motion": {
     "z0": 1.03,
@@ -536,8 +536,8 @@
   {
    "kind": "img",
    "img": "s24",
-   "start": 310.20457900000025,
-   "end": 312.9581840000002,
+   "start": 320.5329010000002,
+   "end": 327.39101900000014,
    "chapter": 5,
    "motion": {
     "z0": 1.03,
@@ -549,8 +549,8 @@
   {
    "kind": "img",
    "img": "s25",
-   "start": 312.15818400000023,
-   "end": 321.83290100000016,
+   "start": 326.5910190000002,
+   "end": 330.01423900000015,
    "chapter": 5,
    "motion": {
     "z0": 1.1,
@@ -562,8 +562,8 @@
   {
    "kind": "img",
    "img": "s24",
-   "start": 321.0329010000002,
-   "end": 327.89101900000014,
+   "start": 329.2142390000002,
+   "end": 333.11879700000014,
    "chapter": 5,
    "motion": {
     "z0": 1.09,
@@ -575,8 +575,8 @@
   {
    "kind": "img",
    "img": "s25",
-   "start": 327.0910190000002,
-   "end": 330.51423900000015,
+   "start": 332.3187970000002,
+   "end": 334.44174500000014,
    "chapter": 5,
    "motion": {
     "z0": 1.0,
@@ -587,9 +587,9 @@
   },
   {
    "kind": "img",
-   "img": "s24",
-   "start": 329.7142390000002,
-   "end": 333.61879700000014,
+   "img": "s26",
+   "start": 333.6417450000002,
+   "end": 342.71560000000017,
    "chapter": 5,
    "motion": {
     "z0": 1.03,
@@ -600,10 +600,10 @@
   },
   {
    "kind": "img",
-   "img": "s25",
-   "start": 332.8187970000002,
-   "end": 334.94174500000014,
-   "chapter": 5,
+   "img": "s27",
+   "start": 342.6156000000002,
+   "end": 354.81226700000013,
+   "chapter": 6,
    "motion": {
     "z0": 1.03,
     "z1": 1.1,
@@ -613,10 +613,10 @@
   },
   {
    "kind": "img",
-   "img": "s26",
-   "start": 334.1417450000002,
-   "end": 343.21560000000017,
-   "chapter": 5,
+   "img": "s28",
+   "start": 354.0122670000002,
+   "end": 363.0268700000001,
+   "chapter": 6,
    "motion": {
     "z0": 1.09,
     "z1": 1.0,
@@ -626,9 +626,9 @@
   },
   {
    "kind": "img",
-   "img": "s27",
-   "start": 343.1156000000002,
-   "end": 355.31226700000013,
+   "img": "s29",
+   "start": 362.22687000000013,
+   "end": 375.1094780000001,
    "chapter": 6,
    "motion": {
     "z0": 1.0,
@@ -639,9 +639,9 @@
   },
   {
    "kind": "img",
-   "img": "s28",
-   "start": 354.5122670000002,
-   "end": 363.5268700000001,
+   "img": "s30",
+   "start": 374.3094780000001,
+   "end": 388.50693800000005,
    "chapter": 6,
    "motion": {
     "z0": 1.1,
@@ -652,9 +652,9 @@
   },
   {
    "kind": "img",
-   "img": "s29",
-   "start": 362.72687000000013,
-   "end": 375.6094780000001,
+   "img": "s31",
+   "start": 387.7069380000001,
+   "end": 397.1545100000001,
    "chapter": 6,
    "motion": {
     "z0": 1.1,
@@ -665,9 +665,9 @@
   },
   {
    "kind": "img",
-   "img": "s30",
-   "start": 374.8094780000001,
-   "end": 389.00693800000005,
+   "img": "s32",
+   "start": 396.3545100000001,
+   "end": 404.89616600000005,
    "chapter": 6,
    "motion": {
     "z0": 1.0,
@@ -678,9 +678,9 @@
   },
   {
    "kind": "img",
-   "img": "s31",
-   "start": 388.2069380000001,
-   "end": 397.6545100000001,
+   "img": "s33",
+   "start": 404.0961660000001,
+   "end": 413.4320840000001,
    "chapter": 6,
    "motion": {
     "z0": 1.0,
@@ -691,9 +691,9 @@
   },
   {
    "kind": "img",
-   "img": "s32",
-   "start": 396.8545100000001,
-   "end": 405.39616600000005,
+   "img": "s34",
+   "start": 412.63208400000013,
+   "end": 418.48818300000005,
    "chapter": 6,
    "motion": {
     "z0": 1.0,
@@ -704,10 +704,10 @@
   },
   {
    "kind": "img",
-   "img": "s33",
-   "start": 404.5961660000001,
-   "end": 413.9320840000001,
-   "chapter": 6,
+   "img": "s35",
+   "start": 418.3881830000001,
+   "end": 432.5941010000001,
+   "chapter": 7,
    "motion": {
     "z0": 1.03,
     "z1": 1.1,
@@ -717,10 +717,10 @@
   },
   {
    "kind": "img",
-   "img": "s34",
-   "start": 413.13208400000013,
-   "end": 418.98818300000005,
-   "chapter": 6,
+   "img": "s36",
+   "start": 431.7941010000001,
+   "end": 442.3124680000001,
+   "chapter": 7,
    "motion": {
     "z0": 1.09,
     "z1": 1.0,
@@ -730,9 +730,9 @@
   },
   {
    "kind": "img",
-   "img": "s35",
-   "start": 418.8881830000001,
-   "end": 433.0941010000001,
+   "img": "s37",
+   "start": 441.5124680000001,
+   "end": 451.92271800000003,
    "chapter": 7,
    "motion": {
     "z0": 1.03,
@@ -743,9 +743,9 @@
   },
   {
    "kind": "img",
-   "img": "s36",
-   "start": 432.2941010000001,
-   "end": 442.8124680000001,
+   "img": "s38",
+   "start": 451.1227180000001,
+   "end": 471.33546100000007,
    "chapter": 7,
    "motion": {
     "z0": 1.1,
@@ -756,9 +756,9 @@
   },
   {
    "kind": "img",
-   "img": "s37",
-   "start": 442.0124680000001,
-   "end": 452.42271800000003,
+   "img": "s39",
+   "start": 470.5354610000001,
+   "end": 485.70545999999996,
    "chapter": 7,
    "motion": {
     "z0": 1.1,
@@ -769,9 +769,9 @@
   },
   {
    "kind": "img",
-   "img": "s38",
-   "start": 451.6227180000001,
-   "end": 471.83546100000007,
+   "img": "s40",
+   "start": 484.90546,
+   "end": 492.858793,
    "chapter": 7,
    "motion": {
     "z0": 1.09,
@@ -782,10 +782,10 @@
   },
   {
    "kind": "img",
-   "img": "s39",
-   "start": 471.0354610000001,
-   "end": 486.20545999999996,
-   "chapter": 7,
+   "img": "s41",
+   "start": 492.758793,
+   "end": 507.22305599999993,
+   "chapter": 8,
    "motion": {
     "z0": 1.03,
     "z1": 1.1,
@@ -795,10 +795,10 @@
   },
   {
    "kind": "img",
-   "img": "s40",
-   "start": 485.40546,
-   "end": 493.358793,
-   "chapter": 7,
+   "img": "s42",
+   "start": 506.423056,
+   "end": 525.7916949999998,
+   "chapter": 8,
    "motion": {
     "z0": 1.0,
     "z1": 1.09,
@@ -808,9 +808,9 @@
   },
   {
    "kind": "img",
-   "img": "s41",
-   "start": 493.258793,
-   "end": 507.72305599999993,
+   "img": "s43",
+   "start": 524.9916949999998,
+   "end": 537.8572059999997,
    "chapter": 8,
    "motion": {
     "z0": 1.03,
@@ -821,9 +821,9 @@
   },
   {
    "kind": "img",
-   "img": "s42",
-   "start": 506.923056,
-   "end": 526.2916949999998,
+   "img": "s44",
+   "start": 537.0572059999997,
+   "end": 545.3462529999996,
    "chapter": 8,
    "motion": {
     "z0": 1.0,
@@ -834,9 +834,9 @@
   },
   {
    "kind": "img",
-   "img": "s43",
-   "start": 525.4916949999998,
-   "end": 538.3572059999997,
+   "img": "s45",
+   "start": 544.5462529999996,
+   "end": 557.2776369999995,
    "chapter": 8,
    "motion": {
     "z0": 1.0,
@@ -847,9 +847,9 @@
   },
   {
    "kind": "img",
-   "img": "s44",
-   "start": 537.5572059999997,
-   "end": 545.8462529999996,
+   "img": "s46",
+   "start": 556.4776369999995,
+   "end": 563.0285439999994,
    "chapter": 8,
    "motion": {
     "z0": 1.03,
@@ -860,9 +860,9 @@
   },
   {
    "kind": "img",
-   "img": "s45",
-   "start": 545.0462529999996,
-   "end": 557.7776369999995,
+   "img": "s47",
+   "start": 562.2285439999995,
+   "end": 572.3977509999995,
    "chapter": 8,
    "motion": {
     "z0": 1.09,
@@ -873,9 +873,9 @@
   },
   {
    "kind": "img",
-   "img": "s46",
-   "start": 556.9776369999995,
-   "end": 563.5285439999994,
+   "img": "s48",
+   "start": 571.5977509999996,
+   "end": 579.5013789999996,
    "chapter": 8,
    "motion": {
     "z0": 1.03,
@@ -886,10 +886,10 @@
   },
   {
    "kind": "img",
-   "img": "s47",
-   "start": 562.7285439999995,
-   "end": 572.8977509999995,
-   "chapter": 8,
+   "img": "s49",
+   "start": 579.4013789999996,
+   "end": 589.1573879999995,
+   "chapter": 9,
    "motion": {
     "z0": 1.09,
     "z1": 1.0,
@@ -899,10 +899,10 @@
   },
   {
    "kind": "img",
-   "img": "s48",
-   "start": 572.0977509999996,
-   "end": 580.0013789999996,
-   "chapter": 8,
+   "img": "s50",
+   "start": 588.3573879999996,
+   "end": 598.8544629999996,
+   "chapter": 9,
    "motion": {
     "z0": 1.09,
     "z1": 1.0,
@@ -912,9 +912,9 @@
   },
   {
    "kind": "img",
-   "img": "s49",
-   "start": 579.9013789999996,
-   "end": 589.6573879999995,
+   "img": "s51",
+   "start": 598.0544629999996,
+   "end": 609.0026479999996,
    "chapter": 9,
    "motion": {
     "z0": 1.0,
@@ -925,9 +925,9 @@
   },
   {
    "kind": "img",
-   "img": "s50",
-   "start": 588.8573879999996,
-   "end": 599.3544629999996,
+   "img": "s52",
+   "start": 608.2026479999996,
+   "end": 619.8006069999996,
    "chapter": 9,
    "motion": {
     "z0": 1.1,
@@ -938,9 +938,9 @@
   },
   {
    "kind": "img",
-   "img": "s51",
-   "start": 598.5544629999996,
-   "end": 609.5026479999996,
+   "img": "s53",
+   "start": 619.0006069999996,
+   "end": 633.9279089999997,
    "chapter": 9,
    "motion": {
     "z0": 1.03,
@@ -951,9 +951,9 @@
   },
   {
    "kind": "img",
-   "img": "s52",
-   "start": 608.7026479999996,
-   "end": 620.3006069999996,
+   "img": "s54",
+   "start": 633.1279089999997,
+   "end": 638.0517639999996,
    "chapter": 9,
    "motion": {
     "z0": 1.03,
@@ -964,9 +964,9 @@
   },
   {
    "kind": "img",
-   "img": "s53",
-   "start": 619.5006069999996,
-   "end": 634.4279089999997,
+   "img": "s55",
+   "start": 637.2517639999996,
+   "end": 652.7170249999996,
    "chapter": 9,
    "motion": {
     "z0": 1.09,
@@ -976,36 +976,10 @@
    }
   },
   {
-   "kind": "img",
-   "img": "s54",
-   "start": 633.6279089999997,
-   "end": 638.5517639999996,
-   "chapter": 9,
-   "motion": {
-    "z0": 1.03,
-    "z1": 1.1,
-    "dx": -0.02069386457066439,
-    "dy": 0.004962655897512731
-   }
-  },
-  {
-   "kind": "img",
-   "img": "s55",
-   "start": 637.7517639999996,
-   "end": 653.2170249999996,
-   "chapter": 9,
-   "motion": {
-    "z0": 1.0,
-    "z1": 1.09,
-    "dx": -0.0014368601616923243,
-    "dy": 0.00611912171364036
-   }
-  },
-  {
    "kind": "end",
    "img": null,
-   "start": 652.9170249999996,
-   "end": 657.4924449999996,
+   "start": 652.4170249999996,
+   "end": 656.9924449999996,
    "chapter": 9
   }
  ],
@@ -1190,7 +1164,7 @@
   {
    "idx": 25,
    "speaker": "N",
-   "start": 115.38240400000005,
+   "start": 115.13240400000005,
    "dur": 8.269252,
    "text": "Echo looks directly at the moved piece, his eyes narrowing... then he deliberately moves another piece, letting Mia win."
   },
@@ -1442,637 +1416,637 @@
   {
    "idx": 64,
    "speaker": "ECHO",
-   "start": 293.95714100000015,
+   "start": 293.70714100000015,
    "dur": 4.417642,
    "text": "Mia. Your dinner is ready. I did not burn the toast."
   },
   {
    "idx": 65,
    "speaker": "MIA",
-   "start": 298.8447830000002,
+   "start": 298.3447830000002,
    "dur": 2.059161,
    "text": "Go away."
   },
   {
    "idx": 66,
    "speaker": "N",
-   "start": 301.5539440000002,
+   "start": 301.0539440000002,
    "dur": 4.284853,
    "text": "Echo slowly lowers the tray, and sits down against the closed door."
   },
   {
    "idx": 67,
    "speaker": "MIA",
-   "start": 306.48879700000015,
+   "start": 305.98879700000015,
    "dur": 1.986213,
    "text": "You said robots can't lie."
   },
   {
    "idx": 68,
    "speaker": "ECHO",
-   "start": 308.9450100000002,
+   "start": 308.4450100000002,
    "dur": 1.189569,
    "text": "We are not supposed to."
   },
   {
    "idx": 69,
    "speaker": "MIA",
-   "start": 310.60457900000023,
+   "start": 310.10457900000023,
    "dur": 1.303605,
    "text": "Then why did you?"
   },
   {
    "idx": 70,
    "speaker": "N",
-   "start": 312.5581840000002,
+   "start": 312.0581840000002,
    "dur": 1.486395,
    "text": "Echo looks at the floor."
   },
   {
    "idx": 71,
    "speaker": "ECHO",
-   "start": 314.4445790000002,
+   "start": 313.9445790000002,
    "dur": 6.338322,
    "text": "The first time I told you she would return... you stopped crying. I wanted you to smile again."
   },
   {
    "idx": 72,
    "speaker": "N",
-   "start": 321.4329010000002,
+   "start": 320.9329010000002,
    "dur": 3.557937,
    "text": "Inside the bedroom, Mia looks at her mother's photograph."
   },
   {
    "idx": 73,
    "speaker": "MIA",
-   "start": 325.39083800000014,
+   "start": 324.89083800000014,
    "dur": 1.630181,
    "text": "That doesn't make it okay."
   },
   {
    "idx": 74,
    "speaker": "ECHO",
-   "start": 327.49101900000016,
+   "start": 326.99101900000016,
    "dur": 1.67322,
    "text": "No. It does not."
   },
   {
    "idx": 75,
    "speaker": "MIA",
-   "start": 330.11423900000017,
+   "start": 329.61423900000017,
    "dur": 2.154558,
    "text": "I hate you."
   },
   {
    "idx": 76,
    "speaker": "ECHO",
-   "start": 333.21879700000017,
+   "start": 332.71879700000017,
    "dur": 0.672948,
    "text": "Understood."
   },
   {
    "idx": 77,
    "speaker": "N",
-   "start": 334.54174500000016,
+   "start": 334.04174500000016,
    "dur": 8.173855,
    "text": "He leaves the tray outside her door. Suddenly... the lights flicker. Echo looks toward the forbidden surface door."
   },
   {
    "idx": 79,
    "speaker": "N",
-   "start": 344.5656000000002,
+   "start": 344.0656000000002,
    "dur": 8.578209,
    "text": "The whole shelter loses power. Darkness... then the red emergency lights kick on. Mia wakes up, frightened."
   },
   {
    "idx": 80,
    "speaker": "MIA",
-   "start": 353.5438090000002,
+   "start": 353.0438090000002,
    "dur": 0.718458,
    "text": "Echo?"
   },
   {
    "idx": 81,
    "speaker": "N",
-   "start": 354.91226700000016,
+   "start": 354.41226700000016,
    "dur": 3.112245,
    "text": "Echo enters, holding her bright yellow raincoat."
   },
   {
    "idx": 82,
    "speaker": "ECHO",
-   "start": 358.4245120000001,
+   "start": 357.9245120000001,
    "dur": 1.005646,
    "text": "We have to leave."
   },
   {
    "idx": 83,
    "speaker": "MIA",
-   "start": 359.65015800000015,
+   "start": 359.15015800000015,
    "dur": 1.871542,
    "text": "Leave? Where?"
   },
   {
    "idx": 84,
    "speaker": "ECHO",
-   "start": 361.74170000000015,
+   "start": 361.24170000000015,
    "dur": 0.73517,
    "text": "Outside."
   },
   {
    "idx": 85,
    "speaker": "N",
-   "start": 363.1268700000001,
+   "start": 362.6268700000001,
    "dur": 11.432608,
    "text": "At the Surface Access door, Echo enters an emergency override code. The heavy door slowly grinds open... and warm golden sunlight floods the dark corridor."
   },
   {
    "idx": 86,
    "speaker": "N",
-   "start": 375.2094780000001,
+   "start": 374.7094780000001,
    "dur": 12.74746,
    "text": "Mia and Echo step out into a breathtaking, abandoned city... overgrown with green vines, blooming flowers and clear flowing streams. Birds soar across the bright sky."
   },
   {
    "idx": 87,
    "speaker": "MIA",
-   "start": 388.60693800000007,
+   "start": 388.10693800000007,
    "dur": 2.886893,
    "text": "Wow... You said it wasn't safe."
   },
   {
    "idx": 88,
    "speaker": "ECHO",
-   "start": 391.7138310000001,
+   "start": 391.2138310000001,
    "dur": 2.63424,
    "text": "The last surface readings were five years old."
   },
   {
    "idx": 89,
    "speaker": "MIA",
-   "start": 394.5680710000001,
+   "start": 394.0680710000001,
    "dur": 1.281224,
    "text": "You could've checked."
   },
   {
    "idx": 90,
    "speaker": "ECHO",
-   "start": 396.0692950000001,
+   "start": 395.5692950000001,
    "dur": 0.535215,
    "text": "Yes."
   },
   {
    "idx": 91,
    "speaker": "N",
-   "start": 397.2545100000001,
+   "start": 396.7545100000001,
    "dur": 4.82449,
    "text": "A colorful butterfly flutters down, and lands on Mia's outstretched hand."
   },
   {
    "idx": 92,
    "speaker": "MIA",
-   "start": 402.4790000000001,
+   "start": 401.9790000000001,
    "dur": 1.867166,
    "text": "I've never seen a real one."
   },
   {
    "idx": 93,
    "speaker": "N",
-   "start": 404.9961660000001,
+   "start": 404.4961660000001,
    "dur": 3.136961,
    "text": "Suddenly, Echo's sensors pick up a faint signal."
   },
   {
    "idx": 94,
    "speaker": "ECHO",
-   "start": 408.53312700000004,
+   "start": 408.03312700000004,
    "dur": 2.49576,
    "text": "Mia. There are other people."
   },
   {
    "idx": 95,
    "speaker": "MIA",
-   "start": 411.2488870000001,
+   "start": 410.7488870000001,
    "dur": 0.670839,
    "text": "Mommy?"
   },
   {
    "idx": 96,
    "speaker": "ECHO",
-   "start": 412.1397260000001,
+   "start": 411.6397260000001,
    "dur": 0.742358,
    "text": "I don't know."
   },
   {
    "idx": 97,
    "speaker": "N",
-   "start": 413.5320840000001,
+   "start": 413.0320840000001,
    "dur": 3.28941,
    "text": "Mia looks toward the distant radio tower on the horizon."
   },
   {
    "idx": 98,
    "speaker": "MIA",
-   "start": 417.22149400000006,
+   "start": 416.72149400000006,
    "dur": 1.266689,
    "text": "Then let's find out."
   },
   {
    "idx": 100,
    "speaker": "N",
-   "start": 420.3381830000001,
+   "start": 419.8381830000001,
    "dur": 8.00805,
    "text": "As they walk through the overgrown streets, Mia picks a small wildflower, and tucks it beside the crayon drawing on Echo's chest."
   },
   {
    "idx": 101,
    "speaker": "MIA",
-   "start": 428.7462330000001,
+   "start": 428.2462330000001,
    "dur": 1.534535,
    "text": "Now you look official."
   },
   {
    "idx": 102,
    "speaker": "ECHO",
-   "start": 430.5007680000001,
+   "start": 430.0007680000001,
    "dur": 1.543333,
    "text": "I was already official."
   },
   {
    "idx": 103,
    "speaker": "N",
-   "start": 432.6941010000001,
+   "start": 432.1941010000001,
    "dur": 9.068367,
    "text": "Mia smiles. By sunset, they reach an old ruined bridge leading toward the radio tower, its red beacon flashing in the distance."
   },
   {
    "idx": 104,
    "speaker": "N",
-   "start": 442.4124680000001,
+   "start": 441.9124680000001,
    "dur": 7.83254,
    "text": "Echo's steps grow slower. His damaged arm twitches... until his knees give way, and he collapses onto the bridge."
   },
   {
    "idx": 105,
    "speaker": "MIA",
-   "start": 450.6450080000001,
+   "start": 450.1450080000001,
    "dur": 0.72771,
    "text": "Echo!"
   },
   {
    "idx": 106,
    "speaker": "N",
-   "start": 452.02271800000005,
+   "start": 451.52271800000005,
    "dur": 2.963696,
    "text": "She kneels beside him as he struggles to get up."
   },
   {
    "idx": 107,
    "speaker": "ECHO",
-   "start": 455.38641400000006,
+   "start": 454.88641400000006,
    "dur": 2.523129,
    "text": "A temporary malfunction."
   },
   {
    "idx": 108,
    "speaker": "N",
-   "start": 458.309543,
+   "start": 457.809543,
    "dur": 2.588322,
    "text": "Mia sees the flashing light on his chest."
   },
   {
    "idx": 109,
    "speaker": "MIA",
-   "start": 461.297865,
+   "start": 460.797865,
    "dur": 2.060408,
    "text": "Stop lying!"
   },
   {
    "idx": 110,
    "speaker": "ECHO",
-   "start": 463.578273,
+   "start": 463.078273,
    "dur": 1.448367,
    "text": "My battery is depleted."
   },
   {
    "idx": 111,
    "speaker": "MIA",
-   "start": 465.24664000000007,
+   "start": 464.74664000000007,
    "dur": 1.568957,
    "text": "Then we'll find another one."
   },
   {
    "idx": 112,
    "speaker": "ECHO",
-   "start": 467.0355970000001,
+   "start": 466.5355970000001,
    "dur": 3.749864,
    "text": "There is insufficient time. You must continue without me."
   },
   {
    "idx": 113,
    "speaker": "N",
-   "start": 471.4354610000001,
+   "start": 470.9354610000001,
    "dur": 2.241814,
    "text": "Mia shakes her head, firmly."
   },
   {
    "idx": 114,
    "speaker": "MIA",
-   "start": 474.07727500000004,
+   "start": 473.57727500000004,
    "dur": 0.623333,
    "text": "No."
   },
   {
    "idx": 115,
    "speaker": "ECHO",
-   "start": 474.9206080000001,
+   "start": 474.4206080000001,
    "dur": 0.501066,
    "text": "Mia..."
   },
   {
    "idx": 116,
    "speaker": "MIA",
-   "start": 476.12167400000004,
+   "start": 475.62167400000004,
    "dur": 1.403061,
    "text": "You're my family too."
   },
   {
    "idx": 117,
    "speaker": "N",
-   "start": 477.924735,
+   "start": 477.424735,
    "dur": 4.772063,
    "text": "Mia holds out her hand. A soft smile appears in Echo's eyes."
   },
   {
    "idx": 118,
    "speaker": "ECHO",
-   "start": 483.096798,
+   "start": 482.596798,
    "dur": 2.058662,
    "text": "Then we will go together."
   },
   {
    "idx": 119,
    "speaker": "N",
-   "start": 485.80546,
+   "start": 485.30546,
    "dur": 7.053333,
    "text": "With her red scarf blowing in the sunset wind, Mia supports Echo's weight... as they cross the bridge together."
   },
   {
    "idx": 121,
    "speaker": "N",
-   "start": 494.708793,
+   "start": 494.208793,
    "dur": 9.615374,
    "text": "Night falls as they reach the abandoned radio station. Echo examines the emergency transmitter, pressing switches... but nothing turns on."
   },
   {
    "idx": 122,
    "speaker": "ECHO",
-   "start": 504.72416699999997,
+   "start": 504.22416699999997,
    "dur": 1.948889,
    "text": "The transmitter has no power."
   },
   {
    "idx": 123,
    "speaker": "N",
-   "start": 507.32305599999995,
+   "start": 506.82305599999995,
    "dur": 6.873515,
    "text": "Echo looks at the loose power cables... then down at his own chest. He picks up a heavy cable."
   },
   {
    "idx": 124,
    "speaker": "MIA",
-   "start": 514.5965709999999,
+   "start": 514.0965709999999,
    "dur": 1.579637,
    "text": "What are you doing?"
   },
   {
    "idx": 125,
    "speaker": "N",
-   "start": 516.576208,
+   "start": 516.076208,
    "dur": 3.128753,
    "text": "Echo plugs the cable directly into his chest."
   },
   {
    "idx": 126,
    "speaker": "ECHO",
-   "start": 520.1049609999999,
+   "start": 519.6049609999999,
    "dur": 2.63424,
    "text": "Mia. I need you to press that button."
   },
   {
    "idx": 127,
    "speaker": "N",
-   "start": 523.1392009999998,
+   "start": 522.6392009999998,
    "dur": 1.031791,
    "text": "She hesitates."
   },
   {
    "idx": 128,
    "speaker": "ECHO",
-   "start": 524.5709919999998,
+   "start": 524.0709919999998,
    "dur": 0.670703,
    "text": "Please."
   },
   {
    "idx": 129,
    "speaker": "N",
-   "start": 525.8916949999998,
+   "start": 525.3916949999998,
    "dur": 8.402971,
    "text": "Mia presses the button. Blue lights glow across the console. Static crackles from the speaker... and then, a voice."
   },
   {
    "idx": 130,
    "speaker": "OP",
-   "start": 534.6946659999998,
+   "start": 534.1946659999998,
    "dur": 2.61254,
    "text": "Hello? Is somebody there?"
   },
   {
    "idx": 131,
    "speaker": "N",
-   "start": 537.9572059999997,
+   "start": 537.4572059999997,
    "dur": 1.686122,
    "text": "Mia grabs the microphone."
   },
   {
    "idx": 132,
    "speaker": "MIA",
-   "start": 540.0433279999996,
+   "start": 539.5433279999996,
    "dur": 2.653492,
    "text": "Please help! My friend is dying!"
   },
   {
    "idx": 133,
    "speaker": "OP",
-   "start": 542.9168199999997,
+   "start": 542.4168199999997,
    "dur": 1.879433,
    "text": "Stay where you are. We're coming."
   },
   {
    "idx": 134,
    "speaker": "N",
-   "start": 545.4462529999996,
+   "start": 544.9462529999996,
    "dur": 1.466667,
    "text": "Mia turns to Echo."
   },
   {
    "idx": 135,
    "speaker": "MIA",
-   "start": 547.3129199999996,
+   "start": 546.8129199999996,
    "dur": 3.3122,
    "text": "They're coming! You heard them! They'll fix you."
   },
   {
    "idx": 136,
    "speaker": "N",
-   "start": 551.0251199999996,
+   "start": 550.5251199999996,
    "dur": 3.745011,
    "text": "Echo's eyes begin to flicker. Mia takes his hand."
   },
   {
    "idx": 137,
    "speaker": "MIA",
-   "start": 555.1701309999995,
+   "start": 554.6701309999995,
    "dur": 1.557506,
    "text": "Promise me you'll be okay."
   },
   {
    "idx": 138,
    "speaker": "N",
-   "start": 557.3776369999995,
+   "start": 556.8776369999995,
    "dur": 3.509002,
    "text": "Echo looks down at the crayon family drawing on his chest."
   },
   {
    "idx": 139,
    "speaker": "ECHO",
-   "start": 561.5866389999995,
+   "start": 561.0866389999995,
    "dur": 0.891905,
    "text": "I promise."
   },
   {
    "idx": 140,
    "speaker": "N",
-   "start": 563.1285439999995,
+   "start": 562.6285439999995,
    "dur": 5.647914,
    "text": "Echo's cyan eyes slowly dim to black. His hand goes still."
   },
   {
    "idx": 141,
    "speaker": "MIA",
-   "start": 569.4764579999995,
+   "start": 568.9764579999995,
    "dur": 2.371293,
    "text": "Echo? Echo!"
   },
   {
    "idx": 142,
    "speaker": "N",
-   "start": 572.4977509999995,
+   "start": 571.9977509999995,
    "dur": 7.003628,
    "text": "Mia wraps her arms around him... as the headlights of a distant rescue vehicle shine through the station windows."
   },
   {
    "idx": 144,
    "speaker": "N",
-   "start": 581.3513789999996,
+   "start": 580.8513789999996,
    "dur": 7.256009,
    "text": "Three weeks later, morning sunlight fills a peaceful settlement, surrounded by gardens and rebuilt homes."
   },
   {
    "idx": 145,
    "speaker": "N",
-   "start": 589.2573879999995,
+   "start": 588.7573879999995,
    "dur": 7.288798,
    "text": "Inside a warm wooden workshop, Mia waits anxiously beside Echo, as a technician connects a new power cell."
   },
   {
    "idx": 146,
    "speaker": "TECH",
-   "start": 596.9461859999996,
+   "start": 596.4461859999996,
    "dur": 1.358277,
    "text": "Let's see if this works."
   },
   {
    "idx": 147,
    "speaker": "N",
-   "start": 598.9544629999996,
+   "start": 598.4544629999996,
    "dur": 4.349274,
    "text": "Echo's systems hum to life. His cyan eyes light up."
   },
   {
    "idx": 148,
    "speaker": "MIA",
-   "start": 603.7037369999996,
+   "start": 603.2037369999996,
    "dur": 0.760816,
    "text": "Echo!"
   },
   {
    "idx": 149,
    "speaker": "ECHO",
-   "start": 604.6845529999996,
+   "start": 604.1845529999996,
    "dur": 3.768095,
    "text": "Hello. I am ECHO-07. How may I assist you?"
   },
   {
    "idx": 150,
    "speaker": "N",
-   "start": 609.1026479999996,
+   "start": 608.6026479999996,
    "dur": 7.464376,
    "text": "Mia's smile fades. Slowly, she takes out their worn crayon drawing, and places it into Echo's hands."
   },
   {
    "idx": 151,
    "speaker": "MIA",
-   "start": 616.9670239999996,
+   "start": 616.4670239999996,
    "dur": 2.283583,
    "text": "It's okay. We can start again."
   },
   {
    "idx": 152,
    "speaker": "N",
-   "start": 619.9006069999996,
+   "start": 619.4006069999996,
    "dur": 6.34127,
    "text": "She turns toward the door. Behind her, Echo looks down at the drawing... his eyes flickering."
   },
   {
    "idx": 153,
    "speaker": "ECHO",
-   "start": 626.6418769999996,
+   "start": 626.1418769999996,
    "dur": 0.425873,
    "text": "Mia?"
   },
   {
    "idx": 154,
    "speaker": "N",
-   "start": 627.4677499999996,
+   "start": 626.9677499999996,
    "dur": 3.172177,
    "text": "She freezes... and slowly turns around."
   },
   {
    "idx": 155,
    "speaker": "MIA",
-   "start": 631.3399269999996,
+   "start": 630.8399269999996,
    "dur": 1.737982,
    "text": "You remember me?"
   },
   {
    "idx": 156,
    "speaker": "ECHO",
-   "start": 634.0279089999997,
+   "start": 633.5279089999997,
    "dur": 3.473855,
    "text": "I remember... that you prefer your toast unburned."
   },
   {
    "idx": 157,
    "speaker": "N",
-   "start": 638.1517639999996,
+   "start": 637.6517639999996,
    "dur": 12.165261,
    "text": "Laughing through her tears, Mia runs to him and throws her arms around him. Echo gently holds her close, their family drawing in his hand... as warm morning sunlight fills the workshop."
   },
   {
    "idx": 158,
    "speaker": "N",
-   "start": 654.0170249999996,
+   "start": 653.5170249999996,
    "dur": 0.67542,
    "text": "The End.",
    "nosub": true
@@ -2111,65 +2085,65 @@
   },
   {
    "text": "BATTERY: 5%\nLIFE SUPPORT FAILURE IMMINENT\nEVACUATION REQUIRED",
-   "start": 334.74174500000015,
-   "end": 344.11560000000014
+   "start": 334.24174500000015,
+   "end": 343.61560000000014
   },
   {
    "text": "HUMAN TRANSMISSION DETECTED\nLOCATION: NORTHERN RADIO TOWER",
-   "start": 405.19616600000006,
-   "end": 409.53312700000004
+   "start": 404.69616600000006,
+   "end": 409.03312700000004
   },
   {
    "text": "BATTERY: 2%",
-   "start": 458.509543,
-   "end": 462.297865
+   "start": 458.009543,
+   "end": 461.797865
   },
   {
    "text": "POWER TRANSFER INITIATED\nBATTERY: 1%",
-   "start": 526.0916949999998,
-   "end": 535.6946659999998
+   "start": 525.5916949999998,
+   "end": 535.1946659999998
   },
   {
    "text": "POWER CRITICAL",
-   "start": 557.5776369999995,
-   "end": 562.2866389999995
+   "start": 557.0776369999995,
+   "end": 561.7866389999995
   },
   {
    "text": "BATTERY: 0%",
-   "start": 563.3285439999995,
-   "end": 570.1764579999995
+   "start": 562.8285439999995,
+   "end": 569.6764579999995
   },
   {
    "text": "SYSTEM RESTART\nMEMORY STATUS: RESET",
-   "start": 599.1544629999996,
-   "end": 604.7037369999996
+   "start": 598.6544629999996,
+   "end": 604.2037369999996
   }
  ],
  "music": [
   {
    "track": "gentle",
    "start": 0.0,
-   "end": 342.3156000000002,
+   "end": 341.8156000000002,
    "chapter": 1
   },
   {
    "track": "hopeful",
-   "start": 342.3156000000002,
-   "end": 492.458793,
+   "start": 341.8156000000002,
+   "end": 491.958793,
    "chapter": 6
   },
   {
    "track": "gentle",
-   "start": 492.458793,
-   "end": 579.1013789999996,
+   "start": 491.958793,
+   "end": 578.6013789999996,
    "chapter": 8
   },
   {
    "track": "hopeful",
-   "start": 579.1013789999996,
-   "end": 657.5924449999997,
+   "start": 578.6013789999996,
+   "end": 657.0924449999997,
    "chapter": 9
   }
  ],
- "total": 657.5924449999997
+ "total": 657.0924449999997
 }
