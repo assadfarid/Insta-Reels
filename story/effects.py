@@ -21,6 +21,11 @@ HEADLIGHTS = {'s48'}
 ALARM = {'s14'}
 EYES_FADE = {'s47'}
 EYES_ON = {'s51'}
+EYES_DIM = {'s05', 's17', 's23'}          # eyes slowly dim with sadness
+EYES_WEAK = {'s12', 's46'}                # low battery: weak, uneven flicker
+FLICKER = {'s26'}                         # room lights stutter
+BLACKOUT = {'s27'}                        # power cut, then red emergency light
+RAIN = set()                              # (indoor scene - rain looked wrong)
 
 
 def _rng(name, salt=0):
@@ -75,6 +80,12 @@ class SceneFX:
                 level = max(0.0, 1.0 - local_t / max(1.0, dur * 0.7))
             if name in EYES_ON:
                 level = min(1.0, max(0.0, (local_t - 0.8) / 1.2))
+            if name in EYES_DIM:
+                level = 1.0 - 0.65 * min(1.0, local_t / max(1.0, dur * 0.6))
+            if name in EYES_WEAK:
+                k = int(t * 9)
+                dip = 0.25 if (k * 2654435761 % 97) < 9 else 1.0
+                level = (0.55 + 0.3 * (0.5 + 0.5 * math.sin(t * 2.3))) * dip
             if self.has_eyes and name not in EYES_FADE and name not in EYES_ON:
                 # screen-eyes blink: brief dim
                 for b in self.blinks:
@@ -110,6 +121,27 @@ class SceneFX:
                 y0 = int((t * 997) % (H - 60))
                 frame[y0:y0 + 40] = np.roll(frame[y0:y0 + 40], 18, axis=1)
             frame *= 0.95 + 0.05 * math.sin(t * 31)
+
+        # --- room light flicker / power cut --------------------------
+        if name in FLICKER:
+            k = int(t * 12)
+            if (k * 2654435761 % 101) < 14 and local_t > 1.0:
+                frame *= 0.55
+        if name in BLACKOUT:
+            if local_t < 1.2:
+                frame *= 0.08
+            elif local_t < 2.4:
+                k = int(t * 14)
+                frame *= 0.25 if (k % 3) == 0 else 0.9
+        # --- rain -------------------------------------------------------
+        if name in RAIN:
+            r = np.random.default_rng(int(t * 24))
+            lay = np.zeros((hh, hw), np.float32)
+            n = 160
+            xs = r.uniform(0, hw, n); ys = r.uniform(0, hh, n); ln = r.uniform(10, 22, n)
+            for x0, y0, l0 in zip(xs, ys, ln):
+                cv2.line(lay, (int(x0), int(y0)), (int(x0 - l0 * 0.18), int(y0 + l0)), 1.0, 1, cv2.LINE_AA)
+            add += (lay * 38)[..., None] * np.array([0.8, 0.9, 1.0], np.float32)
 
         # --- headlights sweep ----------------------------------------
         if name in HEADLIGHTS:

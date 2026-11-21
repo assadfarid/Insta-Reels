@@ -52,7 +52,7 @@ def kenburns(shot, t):
 exec(open('script.py').read())
 _KEY_TXT = ["Yes, Mia. [pause] Tomorrow.", "You lied to me!", "I hate you.", "You're my family too.",
             "[whispers] I promise.", "Echo? [shouting] Echo!", "You remember me?",
-            "I remember... that you prefer your toast unburned.", "Promise me you'll be okay."]
+            "I remember... that you prefer your toast unburned.", "Promise me you'll be okay.", "cyan eyes dim... with sadness", "as his eyes dim", "and Echo is gone", "His battery drops", "becomes completely still", "Night falls as they reach", "crayon family drawing on his chest"]
 KEY_PUSH = []   # (scene, start, dur)
 for _ln in tl['lines']:
     _sc, _sp, _tx, _h = LINES[_ln['idx']]
@@ -63,7 +63,7 @@ SHAKE = [(_ln['start'] + _ln['dur'] * 0.72, LINES[_ln['idx']][0]) for _ln in tl[
 
 
 import os as _os
-CLIP_SPEED = {'s37': None, 's07': 0.85, 's39': 0.6, 's03': 'h', 's22': 'h', 's30': 'h', 's32': 'h', 's47': 'h', 's55': 'h', 's10': 'h', 's14': 'h', 's43': 'h', 's51': 'h', 's29': 'h', 's06': 'h', 's45': 'h', 's21': 'h', 's48': 'h', 's08': 1.0, 's09': 'h', 's38': 1.0, 's25': 'h'}      # None = stretch to fill the whole shot
+CLIP_SPEED = {'s37': None, 's07': 0.85, 's39': 0.6, 's03': 'h', 's22': 'h', 's30': 'h', 's32': 'h', 's47': 'h', 's55': 'h', 's10': 'h', 's14': 'h', 's43': 'h', 's51': 'h', 's29': 'h', 's06': 'h', 's45': 'h', 's21': 'h', 's48': 'h', 's08': 1.0, 's09': 'h', 's38': 1.0, 's25': 'h', 's11': 'h', 's13': 0.85, 's28': 'h', 's40': 'h', 's42': 'h', 's44': 'h', 's52': 'h'}      # None = stretch to fill the whole shot
 import re as _re
 _WT = json.load(open('word_times.json'))
 
@@ -107,6 +107,13 @@ SYNC = {
     's09': ('Checkmate', 0.1),
     's38': ('She kneels beside him', 0.0),
     's25': ('Echo looks at the floor', 2.0),
+    's11': ('Mia tapes the drawing', 1.2),
+    's13': ('Mia explores a dim corridor', 0.0),
+    's28': ('Echo enters, holding', 0.0),
+    's40': ('red scarf blowing', 0.0),
+    's42': ('plugs the cable directly', 5.6),
+    's44': ('Mia grabs the microphone', 0.0),
+    's52': ("Mia's smile fades", 0.0),
     's21': ("If you're watching this", 0.4),
     's47': ('slowly dim to black', 4.6),
     's51': ('cyan eyes light up', 1.5),
@@ -116,7 +123,7 @@ CLIPS = {}
 for _s in tl['shots']:
     _n = _s.get('img')
     if _s['kind'] == 'img' and _n in CLIP_SPEED and _os.path.exists(f'assets/clips/{_n}.mp4') and _n not in CLIPS:
-        _cdur = {'s39': 5.0, 's06': 10.0, 's08': 10.0, 's09': 10.0, 's38': 7.3, 's25': 10.0}.get(_n, (7.93 if _n in ('s10','s14','s43','s51','s29') else 7.85) if CLIP_SPEED[_n] == 'h' else 10.0)
+        _cdur = {'s39': 5.0, 's06': 10.0, 's08': 10.0, 's09': 10.0, 's38': 7.3, 's25': 10.0, 's13': 10.0, 's28': 10.0}.get(_n, (7.93 if _n in ('s10','s14','s43','s51','s29') else 7.85) if CLIP_SPEED[_n] == 'h' else 10.0)
         _span = _s['end'] - _s['start'] + XF
         _sp = max(0.6, min(1.0, _cdur / _span)) if CLIP_SPEED[_n] == 'h' else (CLIP_SPEED[_n] or min(1.0, _cdur / _span))
         if _n == 's37':
