@@ -447,15 +447,21 @@ if '--stills' in sys.argv:
     sys.exit(0)
 
 total_frames = int(tl['total'] * FPS)
+CHUNK = 720
 per = math.ceil(total_frames / nparts)
 f0, f1 = part * per, min(total_frames, (part + 1) * per)
 if '--clip' in sys.argv:
     a, b = [float(x) for x in sys.argv[sys.argv.index('--clip') + 1].split(',')]
     f0, f1 = int(a * FPS), int(b * FPS)
+OUT = f'out/part_{part}.mp4'
+if '--chunk' in sys.argv:              # 30-second piece used by quick updates (render_quick.py)
+    ci = int(sys.argv[sys.argv.index('--chunk') + 1])
+    f0, f1 = ci * CHUNK, min(total_frames, (ci + 1) * CHUNK)
+    OUT = f'out/chunks/c_{ci:03d}.mp4'
 enc = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}',
                         '-r', str(FPS), '-i', '-', '-c:v', 'libx264', '-preset', 'veryfast' if FAST else 'fast',
                         '-crf', '19', '-pix_fmt', 'yuv420p', '-threads', '2', '-g', str(FPS * 4),
-                        f'out/part_{part}.mp4'], stdin=subprocess.PIPE)
+                        OUT], stdin=subprocess.PIPE)
 for f in range(f0, f1):
     enc.stdin.write(frame_at(f / FPS).tobytes())
     if (f - f0) % 240 == 0:

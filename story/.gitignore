@@ -9,3 +9,4 @@ out/voice_samples/
 out/gemini_pack/
 out/gemini_pack.zip
 __pycache__/
+out/chunks/
