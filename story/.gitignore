@@ -11,3 +11,4 @@ out/gemini_pack.zip
 __pycache__/
 out/chunks/
 out/split_log.txt
+out/quick_log.txt
