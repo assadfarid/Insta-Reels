@@ -360,8 +360,10 @@ def _comic_size(self, text, sp):
 MOUTHS = json.load(open('mouths.json'))
 # per-line overrides where a clip moves the speaker during the scene
 # per-line face boxes where a clip zooms or moves during the scene
-FACES_LINE = {'A temporary malfunction.': {'MIA': [0.21, 0.17, 0.36, 0.43], 'ECHO': [0.49, 0.15, 0.66, 0.45]}}
-MOUTH_LINE = {'A temporary malfunction.': ([0.55, 0.36, -1], [0.49, 0.15, 0.66, 0.45]),
+FACES_LINE = {('Yes, Mia. Tomorrow.', 'late'): {'ECHO': [0.60, 0.0, 1.0, 0.72], 'PHOTO': [0.0, 0.30, 0.36, 1.0]},
+              'A temporary malfunction.': {'MIA': [0.21, 0.17, 0.36, 0.43], 'ECHO': [0.49, 0.15, 0.66, 0.45]}}
+MOUTH_LINE = {('Yes, Mia. Tomorrow.', 'late'): ([0.64, 0.50, -1], [0.60, 0.0, 1.0, 0.72]),
+              'A temporary malfunction.': ([0.55, 0.36, -1], [0.49, 0.15, 0.66, 0.45]),
               'The surface is unsafe.': ([0.40, 0.33, -1], [0.33, 0.12, 0.49, 0.40])}
 
 
@@ -396,7 +398,8 @@ def _place(self, it, get_M, M_now, sw, sh):
         r = get_M(it['scene'], tt) if get_M else None
         mats.append(r[0] if r else M_now)
     Ma = mats[0]
-    faces = FACES_LINE.get(it['text'], FACES2.get(it['scene'], {}))
+    _late = (it['text'], 'late') if it['a'] > 20 else None
+    faces = FACES_LINE.get(_late, FACES_LINE.get(it['text'], FACES2.get(it['scene'], {})))
     raw, who_raw = [], []
     for Mx in mats:
         for who, (x0, y0, x1, y1) in faces.items():
@@ -411,7 +414,10 @@ def _place(self, it, get_M, M_now, sw, sh):
         HUDB = []
     sp = it['sp']
     mk = f"{it['scene']}:{sp}"
-    if it['text'] in MOUTH_LINE:
+    if _late in MOUTH_LINE:
+        (mx, my, face), _fbx = MOUTH_LINE[_late]
+        faces = dict(faces); faces[sp] = _fbx
+    elif it['text'] in MOUTH_LINE:
         (mx, my, face), _fbx = MOUTH_LINE[it['text']]
         faces = dict(faces); faces[sp] = _fbx
     elif mk in MOUTHS:
