@@ -69,8 +69,11 @@ else:
     if arg == 'all':
         idx = list(range(N))
     else:
-        a, b = [float(x) for x in arg.split(',')]
-        idx = list(range(max(0, int(a * FPS) // CHUNK), min(N, int(b * FPS) // CHUNK + 1)))
+        idx = set()
+        for rng in arg.split(';'):                      # several ranges: "40,60;300,320"
+            a, b = [float(x) for x in rng.split(',')]
+            idx |= set(range(max(0, int(a * FPS) // CHUNK), min(N, int(b * FPS) // CHUNK + 1)))
+        idx = sorted(idx)
     print('re-rendering pieces', idx, flush=True)
     with ThreadPoolExecutor(WORKERS) as ex:
         list(ex.map(render, idx))
