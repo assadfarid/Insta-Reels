@@ -63,7 +63,7 @@ SHAKE = [(_ln['start'] + _ln['dur'] * 0.72, LINES[_ln['idx']][0]) for _ln in tl[
 
 
 import os as _os
-CLIP_SPEED = {'s37': None, 's07': 0.85, 's39': 0.6, 's03': 'h', 's22': 'h', 's30': 'h', 's32': 'h', 's47': 'h', 's55': 'h', 's10': 'h', 's14': 'h', 's43': 'h', 's51': 'h', 's29': 'h', 's06': 'h', 's45': 'h', 's21': 'h', 's48': 'h', 's08': 1.0, 's09': 'h', 's38': 1.0, 's25': 'h', 's11': 'h', 's13': 0.85, 's28': 'h', 's40': 'h', 's42': 'h', 's44': 'h', 's52': 'h', 's04': 'h', 's24': 'h', 's53': 'h', 's01': 'h', 's20': 'h', 's31': 'h', 's27': 'h', 's33': 'h', 's41': 'h', 's50': 'h', 's15': 'h', 's54': 'h', 's23': 'h', 's19': 'h', 's35': 'h', 's46': 'h'}      # None = stretch to fill the whole shot
+CLIP_SPEED = {'s37': None, 's07': 0.85, 's39': 0.6, 's03': 'h', 's22': 'h', 's30': 'h', 's32': 'h', 's47': 'h', 's55': 'h', 's10': 'h', 's14': 'h', 's43': 'h', 's51': 'h', 's29': 'h', 's06': 'h', 's45': 'h', 's21': 'h', 's48': 'h', 's08': 1.0, 's09': 'h', 's38': 1.0, 's25': 'h', 's11': 'h', 's13': 0.85, 's28': 'h', 's40': 'h', 's42': 'h', 's44': 'h', 's52': 'h', 's04': 'h', 's24': 'h', 's53': 'h', 's01': 'h', 's20': 'h', 's31': 'h', 's27': 'h', 's33': 'h', 's41': 'h', 's50': 'h', 's15': 'h', 's54': 'h', 's23': 'h', 's19': 'h', 's35': 'h', 's46': 'h', 's02': 'h', 's05': 'h', 's12': 'h', 's17': 'h', 's18': 'h', 's34': 'h'}      # None = stretch to fill the whole shot
 import re as _re
 _WT = json.load(open('word_times.json'))
 
@@ -124,6 +124,12 @@ SYNC = {
     's19': ('follows a faint mechanical sound', 0.0),
     's35': ('Mia picks a small wildflower', 1.5),
     's46': ('crayon family drawing on his chest', 0.0),
+    's02': ('stands beside her bed', 0.0),
+    's05': ("cyan eyes dim", 2.0),
+    's12': ('quietly covers the warning', 5.0),
+    's17': ('Mia walks away', 0.0),
+    's18': ('That night, Mia wakes up', 0.0),
+    's34': ('looks toward the distant radio tower', 0.0),
     's13': ('Mia explores a dim corridor', 0.0),
     's28': ('Echo enters, holding', 0.0),
     's40': ('red scarf blowing', 0.0),
@@ -139,7 +145,7 @@ CLIPS = {}
 for _s in tl['shots']:
     _n = _s.get('img')
     if _s['kind'] == 'img' and _n in CLIP_SPEED and _os.path.exists(f'assets/clips/{_n}.mp4') and _n not in CLIPS:
-        _cdur = {'s39': 5.0, 's06': 10.0, 's08': 10.0, 's09': 10.0, 's38': 7.3, 's25': 10.0, 's13': 10.0, 's28': 10.0, 's04': 10.0, 's24': 10.0, 's53': 10.0, 's50': 10.0, 's15': 10.0, 's54': 10.0, 's42': 10.0, 's46': 10.0}.get(_n, (7.93 if _n in ('s10','s14','s43','s51','s29') else 7.85) if CLIP_SPEED[_n] == 'h' else 10.0)
+        _cdur = {'s39': 5.0, 's06': 10.0, 's08': 10.0, 's09': 10.0, 's38': 7.3, 's25': 10.0, 's13': 10.0, 's28': 10.0, 's04': 10.0, 's24': 10.0, 's53': 10.0, 's50': 10.0, 's15': 10.0, 's54': 10.0, 's42': 10.0, 's46': 10.0, 's02': 10.0, 's05': 10.0}.get(_n, (7.93 if _n in ('s10','s14','s43','s51','s29') else 7.85) if CLIP_SPEED[_n] == 'h' else 10.0)
         _span = _s['end'] - _s['start'] + XF
         _sp = max(0.6, min(1.0, _cdur / _span)) if CLIP_SPEED[_n] == 'h' else (CLIP_SPEED[_n] or min(1.0, _cdur / _span))
         if _n == 's37':
