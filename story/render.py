@@ -63,7 +63,7 @@ SHAKE = [(_ln['start'] + _ln['dur'] * 0.72, LINES[_ln['idx']][0]) for _ln in tl[
 
 
 import os as _os
-CLIP_SPEED = {'s37': None, 's07': 0.85, 's39': 0.6, 's03': 'h', 's22': 'h', 's30': 'h', 's32': 'h', 's47': 'h', 's55': 'h', 's10': 'h', 's14': 'h', 's43': 'h', 's51': 'h', 's29': 'h', 's06': 'h', 's45': 'h', 's21': 'h', 's48': 'h', 's08': 1.0, 's09': 'h', 's38': 1.0, 's25': 'h', 's11': 'h', 's13': 0.85, 's28': 'h', 's40': 'h', 's42': 'h', 's44': 'h', 's52': 'h', 's04': 'h', 's24': 'h', 's53': 'h', 's01': 'h', 's20': 'h', 's31': 'h', 's27': 'h', 's33': 'h', 's41': 'h', 's50': 'h', 's15': 'h', 's54': 'h', 's23': 'h', 's19': 'h', 's35': 'h', 's46': 'h', 's02': 'h', 's05': 'h', 's12': 'h', 's17': 'h', 's18': 'h', 's34': 'h', 's49': 'h', 's26': 'h'}      # None = stretch to fill the whole shot
+CLIP_SPEED = {'s37': None, 's07': 0.85, 's39': 0.6, 's03': 'h', 's22': 'h', 's30': 'h', 's32': 'h', 's47': 'h', 's55': 'h', 's10': 'h', 's14': 'h', 's43': 'h', 's51': 'h', 's29': 'h', 's06': 'h', 's45': 'h', 's21': 'h', 's48': 'h', 's08': 1.0, 's09': 'h', 's38': 1.0, 's25': 'h', 's11': 'h', 's13': 0.85, 's28': 'h', 's40': 'h', 's42': 'h', 's44': 'h', 's52': 'h', 's04': 'h', 's24': 'h', 's53': 'h', 's01': 'h', 's20': 'h', 's31': 'h', 's27': 'h', 's33': 'h', 's41': 'h', 's50': 'h', 's15': 'h', 's54': 'h', 's23': 'h', 's19': 'h', 's35': 'h', 's46': 'h', 's02': 'h', 's05': 'h', 's12': 'h', 's17': 'h', 's18': 'h', 's34': 'h', 's49': 'h', 's26': 'h', 's56': 'h', 's16': 'h'}      # None = stretch to fill the whole shot
 import re as _re
 _WT = json.load(open('word_times.json'))
 
@@ -132,6 +132,8 @@ SYNC = {
     's34': ('looks toward the distant radio tower', 0.0),
     's49': ('Three weeks later', 0.0),
     's26': ('the lights flicker', 0.0),
+    's56': ("You said robots can't lie", 1.0),
+    's16': ('becomes completely still', 7.0),
     's13': ('Mia explores a dim corridor', 0.0),
     's28': ('Echo enters, holding', 0.0),
     's40': ('red scarf blowing', 0.0),
@@ -147,7 +149,7 @@ CLIPS = {}
 for _s in tl['shots']:
     _n = _s.get('img')
     if _s['kind'] == 'img' and _n in CLIP_SPEED and _os.path.exists(f'assets/clips/{_n}.mp4') and _n not in CLIPS:
-        _cdur = {'s39': 5.0, 's06': 10.0, 's08': 10.0, 's09': 10.0, 's38': 7.3, 's25': 10.0, 's13': 10.0, 's28': 10.0, 's04': 10.0, 's24': 10.0, 's53': 10.0, 's50': 10.0, 's15': 10.0, 's54': 10.0, 's42': 10.0, 's46': 10.0, 's02': 10.0, 's05': 10.0, 's26': 3.0}.get(_n, (7.93 if _n in ('s10','s14','s43','s51','s29') else 7.85) if CLIP_SPEED[_n] == 'h' else 10.0)
+        _cdur = {'s39': 5.0, 's06': 10.0, 's08': 10.0, 's09': 10.0, 's38': 7.3, 's25': 10.0, 's13': 10.0, 's28': 10.0, 's04': 10.0, 's24': 10.0, 's53': 10.0, 's50': 10.0, 's15': 10.0, 's54': 10.0, 's42': 10.0, 's46': 10.0, 's02': 10.0, 's05': 10.0, 's26': 3.0, 's56': 10.0, 's16': 10.0}.get(_n, (7.93 if _n in ('s10','s14','s43','s51','s29') else 7.85) if CLIP_SPEED[_n] == 'h' else 10.0)
         _span = _s['end'] - _s['start'] + XF
         _sp = max(0.6, min(1.0, _cdur / _span)) if CLIP_SPEED[_n] == 'h' else (CLIP_SPEED[_n] or min(1.0, _cdur / _span))
         if _n == 's37':
@@ -156,26 +158,86 @@ for _s in tl['shots']:
         _st = (phrase_time(_ph) - _act / _sp) if _ph else _s['start']
         CLIPS[_n] = {'start': _st, 'speed': _sp, 'end': _st + _cdur / _sp - 0.05, 'shot_start': _s['start'],
                      'fill': False, 'hold': True, 'pre': 'still' if _n == 's37' else 'first'}
+        CLIPS[_n].update(cdur=_cdur, act=_act, ts=(phrase_time(_ph) if _ph else _s['start'] + 0.5))
 
 
 class _ClipReader:
-    def __init__(self, path):
-        self.path = path; self.cap = cv2.VideoCapture(path); self.idx = -1; self.frame = None
-        self.n = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    """Whole clip decoded into memory at <=1280x720 so it can be read at any frame, forwards or back."""
+    _lru = []
 
-    def get(self, i):
-        i = max(0, min(self.n - 1, i))
-        if i < self.idx:
-            self.cap.release(); self.cap = cv2.VideoCapture(self.path); self.idx = -1
-        while self.idx < i:
-            ok, fr = self.cap.read()
+    def __init__(self, path):
+        self.path = path
+        cap = cv2.VideoCapture(path); fr = []
+        while True:
+            ok, f = cap.read()
             if not ok:
                 break
-            self.idx += 1; self.frame = cv2.cvtColor(fr, cv2.COLOR_BGR2RGB)
-        return self.frame
+            if f.shape[1] > 1280:
+                f = cv2.resize(f, (1280, 720), interpolation=cv2.INTER_AREA)
+            fr.append(cv2.cvtColor(f, cv2.COLOR_BGR2RGB))
+        cap.release()
+        self.frames = fr; self.n = len(fr)
+
+    def get(self, i):
+        return self.frames[max(0, min(self.n - 1, int(i)))]
+
+    def at(self, sec):
+        """Frame at clip time `sec`, blending neighbours so slow playback stays smooth."""
+        x = max(0.0, min(self.n - 1.0, sec * 24))
+        i = int(x); f = x - i
+        a = self.frames[i]
+        if f < 0.02 or i + 1 >= self.n:
+            return a
+        return cv2.addWeighted(a, 1 - f, self.frames[i + 1], f, 0)
 
 
 _readers = {}
+
+
+def _reader(name):
+    if name not in _readers:
+        if len(_readers) >= 3:                       # keep memory bounded
+            _readers.pop(next(iter(_readers)))
+        _readers[name] = _ClipReader(f'assets/clips/{name}.mp4')
+    return _readers[name]
+
+
+def _tri(x):
+    x = x % 2.0
+    return x if x < 1 else 2 - x
+
+
+def clip_time(name, shot, t):
+    """Clip seconds to show at film time t: never frozen. The clip plays slowed so its key action lands
+    on the narrated words; before/after the clip's own motion it idles gently back and forth."""
+    c = CLIPS[name]; cd = c['cdur'] - 0.05; act = c['act']; ts = c['ts']
+    s0, s1 = shot['start'], shot['end'] + XF
+    def idle_head(tt, until):
+        amp = 0.45 * min(1.0, max(0.0, (until - tt) / 1.5))
+        return amp * _tri((tt - s0) / 2.6)
+    def idle_tail(tt, since):
+        amp = 0.45 * min(1.0, max(0.0, (tt - since) / 1.5))
+        return cd - amp * _tri((tt - since) / 2.6)
+    if s0 - 0.01 <= ts <= s1:                        # the shot carrying the sync point
+        if t < ts:
+            v1 = min(1.0, max(0.3, act / max(0.1, ts - s0)))
+            ct = act - (ts - t) * v1
+            if ct < 0:
+                start_play = ts - act / v1
+                return idle_head(t, start_play)
+            return ct
+        v2 = min(1.0, max(0.3, (cd - act) / max(0.1, s1 - ts)))
+        ct = act + (t - ts) * v2
+        if ct > cd:
+            return idle_tail(t, ts + (cd - act) / v2)
+        return ct
+    if s1 < ts:                                      # an earlier shot of this scene (e.g. the opening hook)
+        lim = cd * 0.3; ct = (t - s0) * 0.25
+        if ct < lim:
+            return ct
+        return lim - 0.4 * _tri((t - s0 - lim / 0.25) / 2.6) * min(1.0, (t - s0 - lim / 0.25) / 1.5)
+    return idle_tail(t, s0)                          # a later return to this scene
+
 
 
 _cmatch = {}
@@ -192,7 +254,7 @@ def color_match(name, fr):
     clip sits in the same look as the still pictures around it."""
     if name not in _cmatch:
         ref = cv2.resize(src_img(name), (fr.shape[1], fr.shape[0]), interpolation=cv2.INTER_AREA)
-        rd = _ClipReader(f'assets/clips/{name}.mp4')
+        rd = _reader(name)
         smp = [rd.get(k) for k in range(0, rd.n, max(1, rd.n // 6))]
         ms = [_lab_stats(f) for f in smp if f is not None]
         cm = np.mean([m for m, _ in ms], 0); cs = np.mean([v for _, v in ms], 0)
@@ -205,12 +267,9 @@ def color_match(name, fr):
     return cv2.cvtColor(np.clip(out, 0, 255).astype(np.uint8), cv2.COLOR_LAB2RGB)
 
 
-def clip_frame(name, t, M):
-    c = CLIPS[name]
-    if name not in _readers:
-        _readers[name] = _ClipReader(f'assets/clips/{name}.mp4')
-    rd = _readers[name]
-    fr = color_match(name, rd.get(max(0, int((t - c['start']) * c['speed'] * 24))))
+def clip_frame(name, shot, t, M):
+    rd = _reader(name)
+    fr = color_match(name, rd.at(clip_time(name, shot, t)))
     ih, iw = src_img(name).shape[:2]
     fh, fw = fr.shape[:2]
     Mv = (np.vstack([M, [0, 0, 1]]) @ np.diag([iw / fw, ih / fh, 1.0]))[:2].astype(np.float32)
@@ -218,10 +277,10 @@ def clip_frame(name, t, M):
 
 
 def camera_M(shot, t):
-    if shot.get('img') in CLIPS:
-        t = max(t, CLIPS[shot['img']]['end'])      # camera holds still while the video plays
     ih, iw = src_img(shot['img']).shape[:2]
     m = shot['motion']
+    if shot.get('img') in CLIPS:                    # video shots: slow, gentle drift so nothing ever stops
+        m = {'z0': 1.0, 'z1': 1.035, 'dx': m['dx'] * 0.35, 'dy': m['dy'] * 0.35}
     p = ease((t - shot['start']) / max(0.01, shot['end'] - shot['start']))
     z = m['z0'] + (m['z1'] - m['z0']) * p + 0.05   # headroom for handheld float
     for sc_, st_, du_ in KEY_PUSH:                  # slow push-in on emotional lines
@@ -277,17 +336,35 @@ def first_img_of_chapter(c):
             return s['img']
 
 
-def title_frame(shot):
+def _title_bg(shot, t):
+    """Moving, softly blurred video behind the title / end card (never a still)."""
+    name = {'main': 's01', 'end': 's55'}.get(shot['kind']) or first_img_of_chapter(shot['chapter'])
+    lt = t - shot['start']
+    if name in CLIPS:
+        rd = _reader(name); cd = CLIPS[name]['cdur'] - 0.05
+        sec = min(cd, 0.5 + lt * 0.35) if shot['kind'] == 'main' else cd - 2.2 + 2.0 * _tri(lt / 4.0)
+        fr = color_match(name, rd.at(sec))
+    else:
+        fr = src_img(name)
+    z = 1.04 + 0.03 * min(1.0, lt / 6.0)
+    small = cv2.resize(fr, (W // 4, H // 4), interpolation=cv2.INTER_AREA)
+    small = cv2.GaussianBlur(small, (0, 0), 3.5)
+    big = cv2.resize(small, (int(W * z), int(H * z)), interpolation=cv2.INTER_LINEAR)
+    oy, ox = (big.shape[0] - H) // 2, (big.shape[1] - W) // 2
+    arr = big[oy:oy + H, ox:ox + W].astype(np.float32) * 0.42
+    return arr * np.array([1.0, 0.95, 0.88]) + np.array([14, 10, 6])
+
+
+def title_frame(shot, t):
     key = (shot['kind'], shot['chapter'])
-    if key in _title_cache:
-        return _title_cache[key]
-    bgname = {'main': 's01', 'end': 's55'}.get(shot['kind']) or first_img_of_chapter(shot['chapter'])
-    bg = Image.fromarray(cv2.resize(src_img(bgname), (W, H), interpolation=cv2.INTER_AREA))
-    bg = bg.filter(ImageFilter.GaussianBlur(14 * S))
-    arr = np.asarray(bg).astype(np.float32) * 0.42
-    # warm paper tint
-    arr = arr * np.array([1.0, 0.95, 0.88]) + np.array([14, 10, 6])
-    img = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8)).convert('RGBA')
+    if key not in _title_cache:
+        _title_cache[key] = _title_text(shot)
+    lay = _title_cache[key]
+    al = lay[..., 3:4] / 255.0
+    return _title_bg(shot, t) * (1 - al) + lay[..., :3] * al
+
+
+def _title_text(shot):
     over = Image.new('RGBA', (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(over)
     if shot['kind'] == 'end':
@@ -311,9 +388,7 @@ def title_frame(shot):
         centered(d, H * 0.36, num, f1, (150, 225, 235, 255))
         centered(d, H * 0.45, name, f2, (246, 238, 222, 255))
         d.line([(W * 0.44, H * 0.62), (W * 0.56, H * 0.62)], fill=(150, 225, 235, 200), width=max(1, int(2 * S)))
-    img = Image.alpha_composite(img, over).convert('RGB')
-    _title_cache[key] = np.asarray(img).astype(np.float32)
-    return _title_cache[key]
+    return np.asarray(over).astype(np.float32)
 
 
 _hud_cache = {}
@@ -374,25 +449,13 @@ CAP = None
 
 def shot_frame(shot, t):
     if shot['kind'] in ('main', 'title', 'end'):
-        base = title_frame(shot)
-        # slow drift so titles aren't static
-        return base
+        return title_frame(shot, t)
     name = shot['img']
     ih, iw = src_img(name).shape[:2]
     if name in CLIPS:
-        c = CLIPS[name]
         M = camera_M(shot, t)
         CUR_M[name] = (M, iw, ih)
-        if t >= c['start'] or c['pre'] == 'first':
-            vid = clip_frame(name, min(max(t, c['start']), c['end']), M).astype(np.float32)
-            if c['pre'] == 'still' and t < c['start'] + 0.4:
-                a = ease((t - c['start']) / 0.4)
-                fr, M2 = kenburns(shot, t)
-                if name not in _fx:
-                    _fx[name] = SceneFX(name, src_img(name), W, H)
-                still = _fx[name].apply(fr.astype(np.float32), M2, t, t - shot['start'], shot['end'] - shot['start'])
-                return vid * a + still * (1 - a)
-            return vid
+        return clip_frame(name, shot, t, M).astype(np.float32)
     fr, M = kenburns(shot, t)
     fr = fr.astype(np.float32)
     CUR_M[name] = (M, iw, ih)
