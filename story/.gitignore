@@ -15,3 +15,4 @@ out/quick_log.txt
 out/quick_log*.txt
 assets/retimed/
 out/retime_log.txt
+out/pack/
