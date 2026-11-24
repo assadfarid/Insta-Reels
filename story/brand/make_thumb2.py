@@ -71,3 +71,11 @@ txt(c, (58, H - 60), 'HE LIED FOR 5 YEARS', ImageFont.truetype(BB, 168), (255, 2
 tag(c, W - 330, 40, 'LIE DETECTED')
 c.convert('RGB').save('brand/thumbnail_D_he_lied_bold.jpg', quality=95)
 print('ok')
+
+# FINAL - Amatic SC golden brush (chosen)
+AM = F + 'amatic-sc-latin-700-normal.woff'
+c = compose()
+txt(c, (55, H - 150), 'He Lied', ImageFont.truetype(AM, 200), (246, 196, 82, 255), stroke=5)
+txt(c, (62, H - 42), 'for five years', ImageFont.truetype(AM, 128), (255, 236, 190, 255), stroke=4)
+tag(c, W - 330, 40, 'LIE DETECTED')
+c.convert('RGB').save('brand/thumbnail_FINAL.jpg', quality=95)
