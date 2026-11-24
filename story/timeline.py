@@ -125,6 +125,10 @@ for i, (scene, sp, text, hud) in enumerate(LINES):
     prev_speaker = sp
 
 cur_shot['end'] = t
+# rolling credits after The End card (music keeps playing; YouTube end-screen sits over the last part)
+CREDITS = 21.0
+shots.append({'kind': 'credits', 'img': None, 'start': t - 0.6, 'end': t + CREDITS, 'chapter': chapter})
+t += CREDITS
 total = t + 0.1
 
 # music segments per chapter

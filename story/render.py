@@ -370,6 +370,74 @@ def _title_bg(shot, t):
     return arr * np.array([1.0, 0.95, 0.88]) + np.array([14, 10, 6])
 
 
+CREDITS_LINES = [
+    ('h', 'The Robot That Learned to Lie'), ('gap', 60),
+    ('r', 'Written by', 'Assad Farid'),
+    ('r', 'Directed by', 'Assad Farid'),
+    ('r', 'Produced by', 'Assad Farid'),
+    ('r', 'Art Direction', 'Assad Farid'),
+    ('r', 'Editing', 'Assad Farid'),
+    ('r', 'Voices & Sound', 'Moonlit Tales'),
+    ('r', 'Original Music', 'Moonlit Tales'),
+    ('gap', 50),
+    ('s', 'Starring'), ('r', 'Mia', 'herself'), ('r', 'ECHO-07', 'himself'),
+    ('gap', 70),
+    ('c', 'Thank you for watching'),
+]
+_cred_cache = {}
+
+
+def _credits_layer():
+    if 'roll' in _cred_cache:
+        return _cred_cache['roll']
+    AM = 'assets/fonts/amatic-sc-latin-700-normal.woff'
+    fh = ImageFont.truetype(AM, int(110 * S)); fr = ImageFont.truetype(AM, int(58 * S)); fs = ImageFont.truetype(AM, int(64 * S))
+    gold, cream = (246, 196, 82, 255), (250, 240, 220, 255)
+    hgt = int(2600 * S); lay = Image.new('RGBA', (W, hgt), (0, 0, 0, 0)); d = ImageDraw.Draw(lay); y = 0
+    for it in CREDITS_LINES:
+        if it[0] == 'gap':
+            y += int(it[1] * S); continue
+        if it[0] == 'h':
+            centered(d, y, it[1], fh, gold); y += int(150 * S); continue
+        if it[0] in ('s', 'c'):
+            centered(d, y, it[1], fs, gold); y += int(100 * S); continue
+        _, role, name = it
+        wr = d.textlength(role, font=fr)
+        d.text((W / 2 - 30 * S - wr + 2 * S, y + 3 * S), role, font=fr, fill=(0, 0, 0, 140)); d.text((W / 2 - 30 * S - wr, y), role, font=fr, fill=(200, 215, 235, 255))
+        d.text((W / 2 + 30 * S + 2 * S, y + 3 * S), name, font=fr, fill=(0, 0, 0, 140)); d.text((W / 2 + 30 * S, y), name, font=fr, fill=cream)
+        y += int(84 * S)
+    lay = lay.crop((0, 0, W, y + int(20 * S)))
+    _cred_cache['roll'] = np.asarray(lay).astype(np.float32)
+    return _cred_cache['roll']
+
+
+def credits_frame(shot, t):
+    """Slow upward credit roll over the softly blurred final scene; ends on the Moonlit Tales card."""
+    lt = t - shot['start']; dur = shot['end'] - shot['start']
+    bg = _title_bg({'kind': 'end', 'start': shot['start'], 'chapter': shot['chapter']}, t) * 0.8
+    roll = _credits_layer(); rh = roll.shape[0]
+    t_roll = dur - 6.5                                  # last 6.5 s: still card (YouTube end-screen time)
+    speed = (H * 0.55 + rh) / max(1.0, t_roll)        # roll until the last line reaches the middle
+    y = int(H - min(lt, t_roll) * speed)
+    a0, a1 = max(0, y), min(H, y + rh)
+    if a1 > a0:
+        part = roll[a0 - y:a1 - y]; al = part[..., 3:4] / 255.0
+        fade = np.clip(1 - max(0.0, lt - (t_roll - 1.0)) / 1.0, 0, 1)
+        bg[a0:a1] = bg[a0:a1] * (1 - al * fade) + part[..., :3] * al * fade
+    if lt > t_roll - 0.6:                               # closing card
+        k = min(1.0, (lt - t_roll + 0.6) / 1.2)
+        if 'card' not in _cred_cache:
+            AM = 'assets/fonts/amatic-sc-latin-700-normal.woff'
+            c = Image.new('RGBA', (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(c)
+            centered(d, H * 0.06, 'A Moonlit Tales production', ImageFont.truetype(AM, int(84 * S)), (246, 196, 82, 255))
+            lg = Image.open('brand/moonlit_tales_watermark_white_600.png').convert('RGBA').resize((int(120 * S), int(120 * S)), Image.LANCZOS)
+            c.alpha_composite(lg, (int(W / 2 - 60 * S), int(H * 0.80)))
+            _cred_cache['card'] = np.asarray(c).astype(np.float32)
+        c = _cred_cache['card']; al = c[..., 3:4] / 255.0 * k
+        bg = bg * (1 - al) + c[..., :3] * al
+    return bg
+
+
 def title_frame(shot, t):
     key = (shot['kind'], shot['chapter'])
     if key not in _title_cache:
@@ -464,6 +532,8 @@ CAP = None
 
 
 def shot_frame(shot, t):
+    if shot['kind'] == 'credits':
+        return credits_frame(shot, t)
     if shot['kind'] in ('main', 'title', 'end'):
         return title_frame(shot, t)
     name = shot['img']
