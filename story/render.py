@@ -372,11 +372,7 @@ def _title_bg(shot, t):
 
 CREDITS_LINES = [
     ('h', 'The Robot That Learned to Lie'), ('gap', 60),
-    ('r', 'Written by', 'Assad Farid'),
-    ('r', 'Directed by', 'Assad Farid'),
-    ('r', 'Produced by', 'Assad Farid'),
-    ('r', 'Art Direction', 'Assad Farid'),
-    ('r', 'Editing', 'Assad Farid'),
+    ('s', 'Written, Directed & Produced by'), ('n', 'Assad Farid'), ('gap', 40),
     ('r', 'Voices & Sound', 'Moonlit Tales'),
     ('r', 'Original Music', 'Moonlit Tales'),
     ('gap', 50),
@@ -401,6 +397,8 @@ def _credits_layer():
             centered(d, y, it[1], fh, gold); y += int(150 * S); continue
         if it[0] in ('s', 'c'):
             centered(d, y, it[1], fs, gold); y += int(100 * S); continue
+        if it[0] == 'n':
+            centered(d, y, it[1], fh, cream); y += int(130 * S); continue
         _, role, name = it
         wr = d.textlength(role, font=fr)
         d.text((W / 2 - 30 * S - wr + 2 * S, y + 3 * S), role, font=fr, fill=(0, 0, 0, 140)); d.text((W / 2 - 30 * S - wr, y), role, font=fr, fill=(200, 215, 235, 255))
