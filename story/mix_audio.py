@@ -44,7 +44,7 @@ peak = np.max(np.abs(voice))
 if peak > 0.95:
     voice *= 0.95 / peak
 
-tracks = {k: load(f'assets/audio_raw/music_{k}.mp3', 'loudnorm=I=-20:TP=-2') for k in ('gentle', 'hopeful')}
+tracks = {k: load(f'assets/audio_raw/music_{k}.mp3', 'loudnorm=I=-20:TP=-2') for k in ('gentle', 'hopeful', 'sad')}
 music = np.zeros(N, np.float32)
 XF = int(4 * SR)
 for m in tl['music']:

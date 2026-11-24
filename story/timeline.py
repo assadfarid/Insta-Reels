@@ -23,8 +23,8 @@ CH_TITLES = {
     9: ("Chapter Nine", "Tomorrow Finally Comes"),
 }
 # Which score plays under each chapter
-CH_MUSIC = {1: 'gentle', 2: 'gentle', 3: 'gentle', 4: 'gentle', 5: 'gentle',
-            6: 'hopeful', 7: 'hopeful', 8: 'gentle', 9: 'hopeful'}
+CH_MUSIC = {1: 'gentle', 2: 'gentle', 3: 'gentle', 4: 'gentle', 5: 'sad',
+            6: 'hopeful', 7: 'hopeful', 8: 'sad', 9: 'hopeful'}
 
 
 def dur(f):

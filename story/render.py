@@ -195,11 +195,18 @@ class _ClipReader:
 _readers = {}
 
 
+_RT = {}
+for _n in list(CLIPS):
+    if _os.path.exists(f'assets/retimed/{_n}.json') and _os.path.exists(f'assets/retimed/{_n}.mp4'):
+        _RT[_n] = json.load(open(f'assets/retimed/{_n}.json'))
+
+
 def _reader(name):
     if name not in _readers:
         if len(_readers) >= 3:                       # keep memory bounded
             _readers.pop(next(iter(_readers)))
-        _readers[name] = _ClipReader(f'assets/clips/{name}.mp4')
+        path = f'assets/retimed/{name}.mp4' if name in _RT else f'assets/clips/{name}.mp4'
+        _readers[name] = _ClipReader(path)
     return _readers[name]
 
 
@@ -211,6 +218,13 @@ def _tri(x):
 def clip_time(name, shot, t):
     """Clip seconds to show at film time t: never frozen. The clip plays slowed so its key action lands
     on the narrated words; before/after the clip's own motion it idles gently back and forth."""
+    if name in _RT:                                  # forward-only retimed copy (retime.py)
+        rt = _RT[name]; L = rt['len'] - 0.05
+        if abs(shot['start'] - rt['s0']) < 0.05:
+            return min(L, max(0.0, t - rt['s0']))
+        if shot['start'] < rt['s0']:                 # earlier shot (e.g. the hook): its own slow opening
+            return min(L * 0.5, max(0.0, (t - shot['start']) * 0.5))
+        return L                                     # later return: the scene's final moment (camera keeps drifting)
     c = CLIPS[name]; cd = c['cdur'] - 0.05; act = c['act']; ts = c['ts']
     s0, s1 = shot['start'], shot['end'] + XF
     def idle_head(tt, until):
@@ -342,8 +356,8 @@ def _title_bg(shot, t):
     name = {'main': 's01', 'end': 's55'}.get(shot['kind']) or first_img_of_chapter(shot['chapter'])
     lt = t - shot['start']
     if name in CLIPS:
-        rd = _reader(name); cd = CLIPS[name]['cdur'] - 0.05
-        sec = min(cd, 0.5 + lt * 0.35) if shot['kind'] == 'main' else cd - 2.2 + 2.0 * _tri(lt / 4.0)
+        rd = _reader(name); cd = (_RT[name]['len'] if name in _RT else CLIPS[name]['cdur']) - 0.05
+        sec = min(cd, 0.5 + lt * 0.35) if shot['kind'] == 'main' else min(cd, cd - 4.0 + lt * 0.8)
         fr = color_match(name, rd.at(sec))
     else:
         fr = src_img(name)

@@ -2123,8 +2123,14 @@
   {
    "track": "gentle",
    "start": 0.0,
-   "end": 341.8156000000002,
+   "end": 283.13981700000016,
    "chapter": 1
+  },
+  {
+   "track": "sad",
+   "start": 283.13981700000016,
+   "end": 341.8156000000002,
+   "chapter": 5
   },
   {
    "track": "hopeful",
@@ -2133,7 +2139,7 @@
    "chapter": 6
   },
   {
-   "track": "gentle",
+   "track": "sad",
    "start": 491.958793,
    "end": 578.6013789999996,
    "chapter": 8
