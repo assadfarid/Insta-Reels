@@ -13,6 +13,7 @@ XF = 0.9  # crossfade seconds
 tl = json.load(open('timeline.json'))
 part, nparts = int(sys.argv[1]), int(sys.argv[2])
 FAST = '--fast' in sys.argv
+NOCAP = '--nocap' in sys.argv        # clean frames (no subtitles, bubbles or HUD) for vertical Shorts
 if FAST:
     W, H = 960, 540
 
@@ -673,7 +674,7 @@ def frame_at(t):
         fr = shot_frame(s, t)
         out = out * (1 - a) + fr * a if out.any() else fr * a
     # HUD overlays
-    for h in tl['huds']:
+    for h in ([] if NOCAP else tl['huds']):
         if h['start'] <= t < h['end'] + 0.4:
             lay = hud_layer(h['text'], t - h['start'])
             fade = min(ease((t - h['start']) / 0.25), 1 - ease((t - h['end']) / 0.4))
@@ -693,7 +694,8 @@ def frame_at(t):
     gr = GRAIN[int(t * FPS) % len(GRAIN)]
     out += cv2.resize(gr, (W, H), interpolation=cv2.INTER_LINEAR)[..., None]
     hud_on = any(h['start'] <= t < h['end'] + 0.4 for h in tl['huds'])
-    CAP.draw(out, t, CUR_M, hud_on, scene_M)
+    if not NOCAP:
+        CAP.draw(out, t, CUR_M, hud_on, scene_M)
     return np.clip(out, 0, 255).astype(np.uint8)
 
 
@@ -715,6 +717,8 @@ if '--chunk' in sys.argv:              # 30-second piece used by quick updates (
     ci = int(sys.argv[sys.argv.index('--chunk') + 1])
     f0, f1 = ci * CHUNK, min(total_frames, (ci + 1) * CHUNK)
     OUT = f'out/chunks/c_{ci:03d}.mp4'
+if '--out' in sys.argv:
+    OUT = sys.argv[sys.argv.index('--out') + 1]
 enc = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}',
                         '-r', str(FPS), '-i', '-', '-c:v', 'libx264', '-preset', 'veryfast' if FAST else 'fast',
                         '-crf', '19', '-pix_fmt', 'yuv420p', '-threads', '2', '-g', str(FPS * 4),
