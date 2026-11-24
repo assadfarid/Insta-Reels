@@ -362,7 +362,8 @@ def title_frame(shot, t):
         _title_cache[key] = _title_text(shot)
     lay = _title_cache[key]
     al = lay[..., 3:4] / 255.0
-    return _title_bg(shot, t) * (1 - al) + lay[..., :3] * al
+    out = _title_bg(shot, t) * (1 - al) + lay[..., :3] * al
+    return put_ornament(out, ORN_Y['end' if shot['kind'] == 'end' else 'main'], t - shot['start'])
 
 
 def _title_text(shot):
@@ -372,8 +373,7 @@ def _title_text(shot):
         f2 = ImageFont.truetype('assets/fonts/fredoka-latin-600-normal.woff', int(150 * S))
         f1 = ImageFont.truetype('assets/fonts/fredoka-latin-500-normal.woff', int(46 * S))
         centered(d, H * 0.38, 'The End', f2, (248, 240, 225, 255))
-        d.line([(W * 0.44, H * 0.60), (W * 0.56, H * 0.60)], fill=(160, 232, 242, 220), width=max(1, int(2 * S)))
-        centered(d, H * 0.64, 'The Robot That Learned to Lie', f1, (160, 232, 242, 255))
+        centered(d, H * 0.67, 'The Robot That Learned to Lie', f1, (236, 210, 160, 255))
     elif shot['kind'] == 'main':
         f1 = ImageFont.truetype(F_HAND, int(54 * S))
         f2 = ImageFont.truetype(F_TITLE, int(120 * S))
@@ -384,15 +384,12 @@ def _title_text(shot):
         f2 = ImageFont.truetype(F_TITLE, int(sz))
         centered(d, H * 0.36, 'a short story', f1, (150, 225, 235, 255))
         centered(d, H * 0.44, title, f2, (246, 238, 222, 255))
-        # thin rule
-        d.line([(W * 0.42, H * 0.60), (W * 0.58, H * 0.60)], fill=(150, 225, 235, 200), width=max(1, int(2 * S)))
     else:
         num, name = shot['title']
         f1 = ImageFont.truetype(F_HAND, int(62 * S))
         f2 = ImageFont.truetype(F_TITLE, int(104 * S))
         centered(d, H * 0.36, num, f1, (150, 225, 235, 255))
         centered(d, H * 0.45, name, f2, (246, 238, 222, 255))
-        d.line([(W * 0.44, H * 0.62), (W * 0.56, H * 0.62)], fill=(150, 225, 235, 200), width=max(1, int(2 * S)))
     return np.asarray(over).astype(np.float32)
 
 
@@ -470,6 +467,69 @@ def shot_frame(shot, t):
 
 
 _chap_cache = {}
+_orn_cache = {}
+ORN_Y = {'main': 0.615, 'end': 0.605, 'title': 0.60, 'chapter': 0.605}
+
+
+def ornament(progress, glow):
+    """Signature divider: warm-gold line that draws outward from the centre, fading at both ends,
+    with Echo's little visor and two cyan eyes in the middle. Returns an RGBA float layer (W x 90)."""
+    key = (round(progress * 40), round(glow * 8))
+    if key in _orn_cache:
+        return _orn_cache[key]
+    h = int(120 * S); cy = h // 2
+    lay = np.zeros((h, W, 4), np.float32)
+    gold = np.array([236, 200, 128], np.float32)
+    half = int(W * 0.21 * ease(progress)); gap = int(60 * S)
+    if half > gap:
+        xs = np.arange(W)
+        d = np.abs(xs - W / 2)
+        a = np.clip((d - gap) / (8 * S), 0, 1) * np.clip(1 - (d - gap) / max(1, half - gap), 0, 1) ** 0.8
+        a[d > half] = 0
+        th = max(1, int(2.2 * S))
+        for k, w_ in ((0, 1.0), (1, 0.55), (2, 0.18), (3, 0.08)):
+            for sgn in ((0,) if k == 0 else (-1, 1)):
+                yy = cy + sgn * (th + k - 1) if k else cy
+                lay[yy, :, :3] = gold
+                lay[yy, :, 3] = np.maximum(lay[yy, :, 3], 255 * a * w_)
+        # tiny diamonds where the line meets the visor
+        im = Image.fromarray(lay.astype(np.uint8), 'RGBA'); dd = ImageDraw.Draw(im)
+        for sx in (-1, 1):
+            x = W // 2 + sx * (gap + int(10 * S)); r_ = int(6 * S)
+            dd.polygon([(x, cy - r_), (x + r_, cy), (x, cy + r_), (x - r_, cy)], fill=(236, 200, 128, int(230 * min(1, progress * 3))))
+        lay = np.asarray(im).astype(np.float32)
+    # Echo visor emblem
+    vis = min(1.0, progress * 2.2)
+    if vis > 0:
+        em = Image.new('RGBA', (W, h), (0, 0, 0, 0)); de = ImageDraw.Draw(em)
+        vw, vh = int(80 * S), int(44 * S); x0, y0 = W // 2 - vw // 2, cy - vh // 2
+        de.rounded_rectangle([x0, y0, x0 + vw, y0 + vh], vh // 2, fill=(22, 26, 34, int(235 * vis)),
+                             outline=(236, 200, 128, int(255 * vis)), width=max(2, int(3 * S)))
+        g = Image.new('RGBA', (W, h), (0, 0, 0, 0)); dg = ImageDraw.Draw(g)
+        er = int(7.5 * S); ex = int(15 * S)
+        for sx in (-1, 1):
+            dg.ellipse([W // 2 + sx * ex - er * 2, cy - er * 2, W // 2 + sx * ex + er * 2, cy + er * 2], fill=(90, 230, 255, int(150 * glow * vis)))
+        g = g.filter(ImageFilter.GaussianBlur(5 * S))
+        em = Image.alpha_composite(em, g); de = ImageDraw.Draw(em)
+        for sx in (-1, 1):
+            de.ellipse([W // 2 + sx * ex - er, cy - er, W // 2 + sx * ex + er, cy + er], fill=(150, 245, 255, int(255 * vis * (0.55 + 0.45 * glow))))
+        base = Image.fromarray(np.clip(lay, 0, 255).astype(np.uint8), 'RGBA')
+        lay = np.asarray(Image.alpha_composite(base, em)).astype(np.float32)
+    _orn_cache[key] = lay
+    return lay
+
+
+def put_ornament(out, yfrac, t_in, alpha=1.0):
+    """Composite the ornament onto frame `out` (float RGB), drawing itself in over ~1.2s."""
+    p = min(1.0, max(0.0, (t_in - 0.25) / 1.2))
+    if p <= 0:
+        return out
+    blink = 0.15 if (t_in % 3.7) < 0.12 and t_in > 1.6 else 1.0
+    glow = (0.75 + 0.25 * math.sin(t_in * 2.2)) * blink
+    lay = ornament(p, glow); h = lay.shape[0]; y0 = int(H * yfrac) - h // 2
+    a = lay[..., 3:4] / 255.0 * alpha
+    out[y0:y0 + h] = out[y0:y0 + h] * (1 - a) + lay[..., :3] * a
+    return out
 
 
 def chapter_layer(title):
@@ -487,7 +547,6 @@ def chapter_layer(title):
     d = ImageDraw.Draw(lay)
     centered(d, H * 0.36, num, f1, (160, 232, 242, 255))
     centered(d, H * 0.43, name, f2, (248, 240, 225, 255))
-    d.line([(W * 0.45, H * 0.585), (W * 0.55, H * 0.585)], fill=(160, 232, 242, 220), width=max(1, int(2 * S)))
     _chap_cache[title] = np.asarray(lay).astype(np.float32)
     return _chap_cache[title]
 
@@ -521,6 +580,7 @@ def frame_at(t):
             lay = chapter_layer(tuple(c['title']))
             al = lay[..., 3:4] / 255.0 * fade
             out = out * (1 - al) + lay[..., :3] * al
+            out = put_ornament(out, ORN_Y['chapter'], t - c['start'], fade)
     # global fade in/out
     g = min(ease(t / 1.5), 1 - ease((t - (tl['total'] - 3.0)) / 3.0))
     out *= VIG * g
