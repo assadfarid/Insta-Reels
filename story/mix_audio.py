@@ -81,6 +81,14 @@ def smooth(x, n):
     return np.pad(y, (pad // 2, pad - pad // 2), mode='edge').astype(np.float32)
 env = smooth(smooth(env, win), int(0.6 * SR))
 duck = 1.0 - 0.55 * np.clip(env / 0.02, 0, 1)
+# from The End card on: music settles to a calm level and stays there (no rise into the credits)
+_es = [s['start'] for s in tl['shots'] if s['kind'] == 'end']
+if _es:
+    i0 = int(_es[0] * SR); i0 = min(i0, len(duck) - 1)
+    target = min(0.5, float(duck[i0])); n = int(2.0 * SR)
+    ramp = np.linspace(float(duck[i0]), target, n).astype(np.float32)
+    duck[i0:i0 + n] = ramp[:len(duck[i0:i0 + n])]
+    duck[i0 + n:] = target
 music *= 0.32 * duck
 # fade music in at the very start and out at the end
 music[:int(2 * SR)] *= np.linspace(0, 1, int(2 * SR))
