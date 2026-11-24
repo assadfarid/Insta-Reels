@@ -422,17 +422,34 @@ def credits_frame(shot, t):
         part = roll[a0 - y:a1 - y]; al = part[..., 3:4] / 255.0
         fade = np.clip(1 - max(0.0, lt - (t_roll - 1.0)) / 1.0, 0, 1)
         bg[a0:a1] = bg[a0:a1] * (1 - al * fade) + part[..., :3] * al * fade
-    if lt > t_roll - 0.6:                               # closing card
-        k = min(1.0, (lt - t_roll + 0.6) / 1.2)
+    if lt > t_roll - 0.6:                               # closing card: logo animates in, channel name big in the middle
+        ct = lt - (t_roll - 0.6)
         if 'card' not in _cred_cache:
             AM = 'assets/fonts/amatic-sc-latin-700-normal.woff'
             c = Image.new('RGBA', (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(c)
-            centered(d, H * 0.06, 'A Moonlit Tales production', ImageFont.truetype(AM, int(84 * S)), (246, 196, 82, 255))
-            lg = Image.open('brand/moonlit_tales_logo_white_600.png').convert('RGBA').resize((int(190 * S), int(190 * S)), Image.LANCZOS)
-            c.alpha_composite(lg, (int(W / 2 - 95 * S), int(H * 0.76)))
+            centered(d, H * 0.50, 'Moonlit Tales', ImageFont.truetype(AM, int(190 * S)), (246, 196, 82, 255))
+            centered(d, H * 0.70, 'Bedtime stories for little dreamers', ImageFont.truetype(AM, int(62 * S)), (250, 240, 220, 255))
             _cred_cache['card'] = np.asarray(c).astype(np.float32)
-        c = _cred_cache['card']; al = c[..., 3:4] / 255.0 * k
-        bg = bg * (1 - al) + c[..., :3] * al
+            _cred_cache['logo'] = Image.open('brand/moonlit_tales_logo_white_600.png').convert('RGBA')
+        # logo: scale 0.6 -> 1.0 with a soft overshoot, fade in, then a gentle glow pulse
+        p = min(1.0, max(0.0, ct / 1.3))
+        sc = 0.6 + 0.4 * (1 + 2.2 * (p - 1) ** 3 + 1.2 * (p - 1) ** 2)
+        a_logo = min(1.0, ct / 0.8)
+        size = max(2, int(230 * S * sc))
+        lg = _cred_cache['logo'].resize((size, size), Image.LANCZOS)
+        lay = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+        glow_k = 0.35 + 0.25 * (0.5 + 0.5 * math.sin(ct * 2.4))
+        g = lg.split()[3].filter(ImageFilter.GaussianBlur(18 * S)).point(lambda v: int(v * glow_k))
+        gl = Image.new('RGBA', lg.size, (255, 226, 150, 0)); gl.putalpha(g)
+        cx, cy = int(W / 2 - size / 2), int(H * 0.27 - size / 2)
+        lay.alpha_composite(gl, (cx, cy)); lay.alpha_composite(lg, (cx, cy))
+        la = np.asarray(lay).astype(np.float32); al = la[..., 3:4] / 255.0 * a_logo
+        bg = bg * (1 - al) + la[..., :3] * al
+        # name + tagline rise in just after the logo
+        k = min(1.0, max(0.0, (ct - 0.6) / 1.0))
+        c = _cred_cache['card']; dy = int((1 - k) * 30 * S)
+        cc = np.roll(c, dy, axis=0); al = cc[..., 3:4] / 255.0 * k
+        bg = bg * (1 - al) + cc[..., :3] * al
     return bg
 
 
