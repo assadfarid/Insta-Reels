@@ -18,3 +18,4 @@ ASSET SIZES:
 - End screen background: moonlit_tales_end_screen_1920x1080.jpg (place YouTube's video/subscribe elements over the boxes and logo)
 - Intro card: moonlit_tales_intro_card_1920x1080.jpg (2-3 s at the start of each story)
 - Ornament: moonlit_tales_ornament.png (transparent; title cards, thumbnails, community posts)
+- Source art: brand/src/ (the painted logo and banner pictures)
