@@ -4,7 +4,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import importlib.util
 spec = importlib.util.spec_from_file_location('b1', 'brand/make_brand.py')
 F = 'assets/fonts/'
-SERIF, HAND, ROUND = F + 'cormorant-garamond-latin-600-normal.woff', F + 'caveat-latin-600-normal.woff', F + 'fredoka-latin-600-normal.woff'
+SERIF, HAND, ROUND = F + 'amatic-sc-latin-700-normal.woff', F + 'amatic-sc-latin-700-normal.woff', F + 'fredoka-latin-600-normal.woff'
 GOLD, CREAM, CYAN = (238, 202, 130), (250, 240, 220), (190, 225, 250)
 OUT = 'brand/'
 logo_art = Image.open('brand/src/logo_art.png').convert('RGB')
@@ -49,10 +49,9 @@ def text(d, cx, y, s, font, fill, glow_im=None):
 
 def title_block(img, cx, cy, scale):
     d = ImageDraw.Draw(img)
-    ft = ImageFont.truetype(SERIF, int(170 * scale)); fs = ImageFont.truetype(HAND, int(64 * scale))
-    text(d, cx, cy - 150 * scale, 'Moonlit Tales', ft, CREAM + (255,), img)
-    o = ornament(int(760 * scale)); img.alpha_composite(o, (int(cx - o.width / 2), int(cy + 40 * scale - o.height / 2)))
-    text(ImageDraw.Draw(img), cx, cy + 75 * scale, 'Bedtime stories for little dreamers', fs, CYAN + (255,), img)
+    ft = ImageFont.truetype(SERIF, int(230 * scale)); fs = ImageFont.truetype(HAND, int(84 * scale))
+    text(d, cx, cy - 190 * scale, 'Moonlit Tales', ft, (246, 196, 82, 255), img)
+    text(ImageDraw.Draw(img), cx, cy + 62 * scale, 'Bedtime stories for little dreamers', fs, CREAM + (255,), img)
 
 
 # 1. logo 800 (+ round preview, watermark)
@@ -72,9 +71,9 @@ pv.convert('RGB').resize((1280, 720)).save(OUT + 'banner_safe_area_preview.jpg',
 # 3. intro card 1920x1080
 W, H = 1920, 1080
 ic = up(art, (W, H)); d = ImageDraw.Draw(ic)
-text(d, 760, H / 2 - 150, 'Moonlit Tales', ImageFont.truetype(SERIF, 150), CREAM + (255,), ic)
-o = ornament(680); ic.alpha_composite(o, (760 - 340, int(H / 2 + 25 - o.height / 2)))
-text(ImageDraw.Draw(ic), 760, H / 2 + 60, 'presents', ImageFont.truetype(HAND, 66), GOLD + (255,), ic)
+text(d, 760, H / 2 - 190, 'Moonlit Tales', ImageFont.truetype(SERIF, 210), (246, 196, 82, 255), ic)
+
+text(ImageDraw.Draw(ic), 760, H / 2 + 50, 'presents', ImageFont.truetype(HAND, 84), CREAM + (255,), ic)
 ic.convert('RGB').save(OUT + 'moonlit_tales_intro_card_1920x1080.jpg', quality=94)
 
 # 4. end screen 1920x1080: softened art, two video slots on the left, subscribe spot under the moon
@@ -83,12 +82,12 @@ dim = Image.new('RGBA', (W, H), (8, 14, 40, 0)); a = np.zeros((H, W), np.float32
 a[:, :] = np.clip(1.15 - np.linspace(0, 1, W)[None, :] * 1.2, 0.15, 0.75) * 255
 dim.putalpha(Image.fromarray(a.astype(np.uint8))); es.alpha_composite(dim)
 d = ImageDraw.Draw(es)
-text(d, 600, 70, 'Thank you for watching', ImageFont.truetype(SERIF, 80), CREAM + (255,), es)
-o = ornament(620); es.alpha_composite(o, (600 - 310, 175))
+text(d, 600, 50, 'Thank you for watching', ImageFont.truetype(SERIF, 110), (246, 196, 82, 255), es)
+
 d = ImageDraw.Draw(es)
 for y in (255, 610):
     d.rounded_rectangle([340, y, 340 + 520, y + 293], 22, outline=GOLD + (220,), width=4)
-text(d, 600, 985, 'A new bedtime story every week', ImageFont.truetype(HAND, 50), CYAN + (255,), es)
+text(d, 600, 975, 'A new bedtime story every week', ImageFont.truetype(HAND, 66), CREAM + (255,), es)
 es.convert('RGB').save(OUT + 'moonlit_tales_end_screen_1920x1080.jpg', quality=94)
 
 # 5. ornament
