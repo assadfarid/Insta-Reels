@@ -63,7 +63,7 @@ SHAKE = [(_ln['start'] + _ln['dur'] * 0.72, LINES[_ln['idx']][0]) for _ln in tl[
 
 
 import os as _os
-CLIP_SPEED = {'s37': None, 's07': 0.85, 's39': 0.6, 's03': 'h', 's22': 'h', 's30': 'h', 's32': 'h', 's47': 'h', 's55': 'h', 's10': 'h', 's14': 'h', 's43': 'h', 's51': 'h', 's29': 'h', 's06': 'h', 's45': 'h', 's21': 'h', 's48': 'h', 's08': 1.0, 's09': 'h', 's38': 1.0, 's25': 'h', 's11': 'h', 's13': 0.85, 's28': 'h', 's40': 'h', 's42': 'h', 's44': 'h', 's52': 'h', 's04': 'h', 's24': 'h', 's53': 'h', 's01': 'h', 's20': 'h', 's31': 'h', 's27': 'h', 's33': 'h', 's41': 'h', 's50': 'h', 's15': 'h', 's54': 'h', 's23': 'h', 's19': 'h', 's35': 'h', 's46': 'h', 's02': 'h', 's05': 'h', 's12': 'h', 's17': 'h', 's18': 'h', 's34': 'h', 's49': 'h', 's26': 'h', 's56': 'h', 's16': 'h'}      # None = stretch to fill the whole shot
+CLIP_SPEED = {'s37': None, 's07': 0.85, 's39': 0.6, 's03': 'h', 's22': 'h', 's30': 'h', 's32': 'h', 's47': 'h', 's55': 'h', 's10': 'h', 's14': 'h', 's43': 'h', 's51': 'h', 's29': 'h', 's06': 'h', 's45': 'h', 's21': 'h', 's48': 'h', 's08': 1.0, 's09': 'h', 's38': 1.0, 's25': 'h', 's11': 'h', 's13': 0.85, 's28': 'h', 's40': 'h', 's42': 'h', 's44': 'h', 's52': 'h', 's04': 'h', 's24': 'h', 's53': 'h', 's01': 'h', 's20': 'h', 's31': 'h', 's27': 'h', 's33': 'h', 's41': 'h', 's50': 'h', 's15': 'h', 's54': 'h', 's23': 'h', 's19': 'h', 's35': 'h', 's46': 'h', 's02': 'h', 's05': 'h', 's12': 'h', 's17': 'h', 's18': 'h', 's34': 'h', 's49': 'h', 's26': 'h', 's56': 'h', 's16': 'h', 's36': 'h'}      # None = stretch to fill the whole shot
 import re as _re
 _WT = json.load(open('word_times.json'))
 
@@ -93,14 +93,14 @@ SYNC = {
     's06': ('proudly places a plate', 2.6),
     's07': ('You burned it again', 0.2),
     's10': ('draws a crayon picture', 0.3),
-    's14': ('Echo rushes into the corridor', 2.4),
+    's14': ('Echo rushes into the corridor', 0.6),
     's22': ('Startled, Mia knocks', 0.2),
     's29': ('warm golden sunlight floods', 5.3),
     's30': ('step out into a breathtaking', 0.3),
     's32': ('lands on Mia', 0.3),
     's37': ('he collapses onto the bridge', 0.0),
     's39': ('Mia holds out her hand', 0.6),
-    's43': ('Blue lights glow', 2.4),
+    's43': ('Blue lights glow', 0.6),
     's45': ('Mia takes his hand', 4.9),
     's48': ('headlights', 1.6),
     's08': ('When Echo looks away', 1.4),
@@ -132,6 +132,7 @@ SYNC = {
     's34': ('looks toward the distant radio tower', 0.0),
     's49': ('Three weeks later', 0.0),
     's26': ('the lights flicker', 0.0),
+    's36': ('By sunset', 0.0),
     's56': ("You said robots can't lie", 1.0),
     's16': ('becomes completely still', 7.0),
     's13': ('Mia explores a dim corridor', 0.0),
