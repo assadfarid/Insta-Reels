@@ -100,7 +100,7 @@ SYNC = {
     's32': ('lands on Mia', 0.3),
     's37': ('he collapses onto the bridge', 0.0),
     's39': ('Mia holds out her hand', 0.6),
-    's43': ('Blue lights glow', 0.6),
+    's43': ('Blue lights glow', 2.4),
     's45': ('Mia takes his hand', 4.9),
     's48': ('headlights', 1.6),
     's08': ('When Echo looks away', 1.4),

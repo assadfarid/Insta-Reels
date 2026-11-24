@@ -40,7 +40,13 @@ def seg(src, a, b, dur, out):
                     '-an', out], check=True)
 
 
+# clips whose key action must play FAST at the sync phrase: (clip_a, clip_b, speed)
+RUSH = {'s14': (0.0, 3.4, 1.5)}
+
+
 def one(name):
+    if name in RUSH:
+        return one_rush(name)
     c = CLIPS[name]; cd = c['cdur'] - 0.05; act = min(c['act'], cd - 0.1); ts = c['ts']
     s = sync_shot(name); s0, s1 = s['start'], s['end'] + XF
     src = f'assets/clips/{name}.mp4'
@@ -64,6 +70,27 @@ def one(name):
         os.remove(p)
     json.dump({'s0': s0, 'len': pre + post}, open(f'assets/retimed/{name}.json', 'w'))
     print(name, 'done', round(pre + post, 1), 's', flush=True)
+
+
+def one_rush(name):
+    c = CLIPS[name]; cd = c['cdur'] - 0.05; ts = c['ts']; a, b, sp = RUSH[name]
+    s = sync_shot(name); s0, s1 = s['start'], s['end'] + XF
+    src = f'assets/clips/{name}.mp4'; tmp = f'assets/retimed/_{name}'
+    pre = max(0.0, ts - s0); rush = (b - a) / sp; rest = max(0.5, s1 - ts - rush)
+    parts = []
+    if pre > 0.05:
+        seg(src, a, a + 0.25, pre, tmp + '_a.mp4'); parts.append(tmp + '_a.mp4')
+    seg(src, a + 0.25, b, rush, tmp + '_b.mp4'); parts.append(tmp + '_b.mp4')
+    seg(src, b, cd, rest, tmp + '_c.mp4'); parts.append(tmp + '_c.mp4')
+    with open(tmp + '.txt', 'w') as f:
+        for p in parts:
+            f.write(f"file '{os.path.basename(p)}'\n")
+    subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', tmp + '.txt', '-c', 'copy',
+                    f'assets/retimed/{name}.mp4'], check=True)
+    for p in parts + [tmp + '.txt']:
+        os.remove(p)
+    json.dump({'s0': s0, 'len': pre + rush + rest}, open(f'assets/retimed/{name}.json', 'w'))
+    print(name, 'done (rush)', round(pre + rush + rest, 1), 's', flush=True)
 
 
 names = sys.argv[1:] or sorted(CLIPS)
