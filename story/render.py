@@ -428,8 +428,8 @@ def credits_frame(shot, t):
             AM = 'assets/fonts/amatic-sc-latin-700-normal.woff'
             c = Image.new('RGBA', (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(c)
             centered(d, H * 0.06, 'A Moonlit Tales production', ImageFont.truetype(AM, int(84 * S)), (246, 196, 82, 255))
-            lg = Image.open('brand/moonlit_tales_watermark_white_600.png').convert('RGBA').resize((int(120 * S), int(120 * S)), Image.LANCZOS)
-            c.alpha_composite(lg, (int(W / 2 - 60 * S), int(H * 0.80)))
+            lg = Image.open('brand/moonlit_tales_logo_white_600.png').convert('RGBA').resize((int(190 * S), int(190 * S)), Image.LANCZOS)
+            c.alpha_composite(lg, (int(W / 2 - 95 * S), int(H * 0.76)))
             _cred_cache['card'] = np.asarray(c).astype(np.float32)
         c = _cred_cache['card']; al = c[..., 3:4] / 255.0 * k
         bg = bg * (1 - al) + c[..., :3] * al
