@@ -363,8 +363,7 @@ MOUTHS = json.load(open('mouths.json'))
 FACES_LINE = {('Yes, Mia. Tomorrow.', 'late'): {'ECHO': [0.60, 0.0, 1.0, 0.72], 'PHOTO': [0.0, 0.30, 0.36, 1.0]},
               'A temporary malfunction.': {'MIA': [0.21, 0.17, 0.36, 0.43], 'ECHO': [0.49, 0.15, 0.66, 0.45]}}
 MOUTH_LINE = {('Yes, Mia. Tomorrow.', 'late'): ([0.64, 0.50, -1], [0.60, 0.0, 1.0, 0.72]),
-              'A temporary malfunction.': ([0.55, 0.36, -1], [0.49, 0.15, 0.66, 0.45]),
-              'The surface is unsafe.': ([0.40, 0.33, -1], [0.33, 0.12, 0.49, 0.40])}
+              'A temporary malfunction.': ([0.55, 0.36, -1], [0.49, 0.15, 0.66, 0.45]),}
 
 
 def _rdist(p, r):

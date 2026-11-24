@@ -93,7 +93,7 @@ SYNC = {
     's06': ('proudly places a plate', 2.6),
     's07': ('You burned it again', 0.2),
     's10': ('draws a crayon picture', 0.3),
-    's14': ('Echo rushes into the corridor', 0.6),
+    's14': ('Echo rushes into the corridor', 0.0),
     's22': ('Startled, Mia knocks', 0.2),
     's29': ('warm golden sunlight floods', 5.3),
     's30': ('step out into a breathtaking', 0.3),
@@ -150,7 +150,7 @@ CLIPS = {}
 for _s in tl['shots']:
     _n = _s.get('img')
     if _s['kind'] == 'img' and _n in CLIP_SPEED and _os.path.exists(f'assets/clips/{_n}.mp4') and _n not in CLIPS:
-        _cdur = {'s39': 5.0, 's06': 10.0, 's08': 10.0, 's09': 10.0, 's38': 7.3, 's25': 10.0, 's13': 10.0, 's28': 10.0, 's04': 10.0, 's24': 10.0, 's53': 10.0, 's50': 10.0, 's15': 10.0, 's54': 10.0, 's42': 10.0, 's46': 10.0, 's02': 10.0, 's05': 10.0, 's26': 10.0, 's56': 10.0, 's16': 10.0, 's17': 4.9}.get(_n, (7.93 if _n in ('s10','s14','s43','s51','s29') else 7.85) if CLIP_SPEED[_n] == 'h' else 10.0)
+        _cdur = {'s39': 5.0, 's06': 10.0, 's08': 10.0, 's09': 10.0, 's38': 7.3, 's25': 10.0, 's13': 10.0, 's28': 10.0, 's04': 10.0, 's24': 10.0, 's53': 10.0, 's50': 10.0, 's15': 10.0, 's54': 10.0, 's42': 10.0, 's46': 10.0, 's02': 10.0, 's05': 10.0, 's26': 10.0, 's56': 10.0, 's16': 10.0, 's14': 3.92, 's17': 4.9}.get(_n, (7.93 if _n in ('s10','s14','s43','s51','s29') else 7.85) if CLIP_SPEED[_n] == 'h' else 10.0)
         _span = _s['end'] - _s['start'] + XF
         _sp = max(0.6, min(1.0, _cdur / _span)) if CLIP_SPEED[_n] == 'h' else (CLIP_SPEED[_n] or min(1.0, _cdur / _span))
         if _n == 's37':

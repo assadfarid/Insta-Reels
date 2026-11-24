@@ -41,7 +41,7 @@ def seg(src, a, b, dur, out):
 
 
 # clips whose key action must play FAST at the sync phrase: (clip_a, clip_b, speed)
-RUSH = {'s14': (0.0, 3.4, 1.5)}
+RUSH = {'s14': (0.0, 3.0, 1.0)}
 
 
 def one(name):
