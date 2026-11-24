@@ -377,11 +377,15 @@ def _title_text(shot):
     elif shot['kind'] == 'main':
         f1 = ImageFont.truetype(F_HAND, int(54 * S))
         f2 = ImageFont.truetype(F_TITLE, int(120 * S))
-        centered(d, H * 0.30, 'a short story', f1, (150, 225, 235, 255))
-        centered(d, H * 0.38, 'The Robot That', f2, (246, 238, 222, 255))
-        centered(d, H * 0.52, 'Learned to Lie', f2, (246, 238, 222, 255))
+        title = 'The Robot That Learned to Lie'
+        sz = 120 * S
+        while d.textlength(title, font=ImageFont.truetype(F_TITLE, int(sz))) > W * 0.86:
+            sz -= 2
+        f2 = ImageFont.truetype(F_TITLE, int(sz))
+        centered(d, H * 0.36, 'a short story', f1, (150, 225, 235, 255))
+        centered(d, H * 0.44, title, f2, (246, 238, 222, 255))
         # thin rule
-        d.line([(W * 0.42, H * 0.70), (W * 0.58, H * 0.70)], fill=(150, 225, 235, 200), width=max(1, int(2 * S)))
+        d.line([(W * 0.42, H * 0.60), (W * 0.58, H * 0.60)], fill=(150, 225, 235, 200), width=max(1, int(2 * S)))
     else:
         num, name = shot['title']
         f1 = ImageFont.truetype(F_HAND, int(62 * S))
