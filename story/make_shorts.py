@@ -22,7 +22,7 @@ GOLD, CREAM, YELLOW = (246, 196, 82), (250, 240, 220), (255, 210, 60)
 TAG = {'MIA': ('Mia', (226, 96, 112)), 'ECHO': ('Echo', (38, 168, 196)), 'OP': ('Radio', (220, 150, 40))}
 
 SHORTS = {
-    1: dict(start=38.5, length=27.0, clean='out/shorts/clean_1.mp4', out='out/shorts/Short_1_the_lie_fullscreen.mp4',
+    1: dict(start=38.5, length=25.8, clean='out/shorts/clean_1.mp4', out='out/shorts/Short_1_the_lie_fullscreen.mp4',
             hook=('Every night he told her', '"Mommy comes home tomorrow"'),
             keys=[(0, .30), (1.6, .30), (2.2, .66), (2.8, .66), (3.3, .32), (5.5, .32), (6.5, .55), (8.5, .55),
                   (10.5, .22), (12.6, .22), (13.6, .55), (15.8, .55), (16.6, .30), (20.4, .30), (21.0, .66),

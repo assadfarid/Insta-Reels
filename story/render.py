@@ -681,7 +681,7 @@ def frame_at(t):
             al = lay[..., 3:4] / 255.0 * fade
             out = out * (1 - al) + lay[..., :3] * al
     # chapter title overlays
-    for c in tl.get('chapters', []):
+    for c in ([] if NOCAP else tl.get('chapters', [])):
         if c['start'] - 0.1 <= t < c['end'] + 0.6:
             fade = min(ease((t - c['start']) / 0.5), 1 - ease((t - c['end']) / 0.6))
             lay = chapter_layer(tuple(c['title']))
