@@ -1,0 +1,21 @@
+CHANNEL NAME: Moonlit Tales
+HANDLE: @MoonlitTales   (backup: @MoonlitTalesTV)
+
+CHANNEL DESCRIPTION (paste into YouTube Studio > Customisation > Basic info):
+Welcome to Moonlit Tales, gentle animated bedtime stories for little dreamers and the grown-ups who read with them.
+
+Every story is an original, hand-painted watercolour tale about kindness, honesty, friendship and family, told by a calm narrator with full character voices. Perfect for winding down at bedtime, quiet afternoons, or watching together as a family.
+
+New stories regularly. Subscribe and turn on notifications so you never miss the next tale.
+
+KEYWORDS (YouTube Studio > Settings > Channel > Keywords):
+bedtime stories, kids stories, animated stories, stories for kids, bedtime story, watercolour animation, moral stories for kids, family stories, short animated film, storytime, kids animation, emotional story
+
+ASSET SIZES:
+- Profile picture: moonlit_tales_logo_800.png (800x800, YouTube crops to a circle)
+- Banner: moonlit_tales_banner_2560x1440.jpg (text sits inside the 1546x423 phone-safe area)
+- Video watermark: moonlit_tales_watermark_150.png (Studio > Customisation > Branding)
+- End screen background: moonlit_tales_end_screen_1920x1080.jpg (place YouTube's video/subscribe elements over the boxes and logo)
+- Intro card: moonlit_tales_intro_card_1920x1080.jpg (2-3 s at the start of each story)
+- Ornament: moonlit_tales_ornament.png (transparent; title cards, thumbnails, community posts)
+- Source art: brand/src/ (the painted logo and banner pictures)

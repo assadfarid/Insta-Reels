@@ -1,0 +1,36 @@
+HOW TO USE (Gemini app -> Video):
+1. Tap + and upload the picture.
+2. Paste the matching prompt. Choose 16:9 / landscape.
+3. Download the clip, name it s45.mp4 / s48.mp4, and upload it here.
+
+=== s45.jpg ===
+At the start their hands are APART. Mia turns to the robot with tears of hope in her eyes; after a moment she slowly reaches out and takes the robot's metal hand in both of hers; the robot's cyan eyes flicker weakly. The background (dark radio station, glowing blue consoles) stays exactly the same the whole time. Keep the exact hand-drawn watercolour storybook style and the same characters. Slow, gentle, subtle motion. Static camera. No text, no new characters, no scene change.
+
+=== s48.jpg ===
+Mia wraps her arms around the robot and hugs it tightly, her shoulders trembling; the robot stays still; warm headlights from a distant rescue vehicle slowly sweep across the station through the windows, light growing brighter. Keep the exact hand-drawn watercolour storybook style and the same characters. Slow, gentle, subtle motion. Static camera or very slow push-in. No text, no new characters, no scene change.
+
+TAIL (already included in each prompt below): Keep the exact hand-drawn watercolour storybook style and the same characters. Slow, gentle, subtle motion. Static camera or very slow push-in. No text, no new characters, no scene change.
+
+=== s01.jpg ===
+Mia sleeps peacefully under the old blanket, breathing slowly; red emergency lights gently pulse and flicker across the dark bedroom; dust drifts in the light. Keep the exact hand-drawn watercolour storybook style and the same characters. Slow, gentle, subtle motion. Static camera or very slow push-in. No text, no new characters, no scene change.
+
+=== s04.jpg ===
+The robot slowly turns its head toward the framed photograph on the nightstand and pauses; its cyan eyes dim slightly, as if thinking; Mia watches it quietly; red light flickers. Keep the exact hand-drawn watercolour storybook style and the same characters. Slow, gentle, subtle motion. Static camera or very slow push-in. No text, no new characters, no scene change.
+
+=== s13.jpg ===
+Mia walks slowly down the dark corridor, her flashlight beam sweeping across the walls until it lands on the big locked metal door; dust floats in the beam. Keep the exact hand-drawn watercolour storybook style and the same characters. Slow, gentle, subtle motion. Static camera or very slow push-in. No text, no new characters, no scene change.
+
+=== s24.jpg ===
+Mia sits on her bed hugging her red scarf, her shoulders shaking softly as she cries; a tear rolls down her cheek; the robot stands still by the door; red light gently flickers. Keep the exact hand-drawn watercolour storybook style and the same characters. Slow, gentle, subtle motion. Static camera or very slow push-in. No text, no new characters, no scene change.
+
+=== s25.jpg ===
+The robot slowly lowers the dinner tray to the floor and sits down against the closed door; its cyan eyes dim and look down sadly; very quiet, small movements. Keep the exact hand-drawn watercolour storybook style and the same characters. Slow, gentle, subtle motion. Static camera or very slow push-in. No text, no new characters, no scene change.
+
+=== s38.jpg ===
+The robot tries to push itself up from the broken bridge but its arms tremble and it sinks back down; the red light on its chest blinks; Mia kneels beside it with worried eyes; sunset light. Keep the exact hand-drawn watercolour storybook style and the same characters. Slow, gentle, subtle motion. Static camera or very slow push-in. No text, no new characters, no scene change.
+
+=== s42.jpg ===
+The robot picks up a heavy power cable and slowly plugs it into its own chest; small sparks; its cyan eyes flicker; Mia watches nervously; the old lamp swings slightly. Keep the exact hand-drawn watercolour storybook style and the same characters. Slow, gentle, subtle motion. Static camera or very slow push-in. No text, no new characters, no scene change.
+
+=== s53.jpg ===
+Mia walks toward the door, then freezes and slowly turns around; behind her the robot looks down at the crayon drawing in its hands, its cyan eyes flickering back to life; warm sunbeams. Keep the exact hand-drawn watercolour storybook style and the same characters. Slow, gentle, subtle motion. Static camera or very slow push-in. No text, no new characters, no scene change.
