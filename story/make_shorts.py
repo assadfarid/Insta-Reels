@@ -27,7 +27,7 @@ SHORTS = {
             keys=[(0, .30), (1.6, .30), (2.2, .66), (2.8, .66), (3.3, .32), (5.5, .32), (6.5, .55), (8.5, .55),
                   (10.5, .22), (12.6, .22), (13.6, .55), (15.8, .55), (16.6, .30), (20.4, .30), (21.0, .66),
                   (22.0, .66), (23.0, .64), (27.0, .64)]),
-    2: dict(start=536.5, length=36.5, clean='out/shorts/clean_2.mp4', out='out/shorts/Short_2_the_promise_fullscreen.mp4',
+    2: dict(start=536.5, length=37.4, audio_end=35.25, clean='out/shorts/clean_2.mp4', out='out/shorts/Short_2_the_promise_fullscreen.mp4',
             hook=('His battery is almost gone...', 'but he made a promise'),
             keys=[(0, .20), (1.5, .33), (8.4, .33), (9.2, .62), (10.0, .30), (13.6, .30), (14.6, .45), (17.6, .45),
                   (18.2, .30), (20.4, .33), (21.6, .50), (26.0, .50), (27.5, .60), (31.8, .60), (32.4, .20),
@@ -125,8 +125,8 @@ def make(n):
     enc = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{OW}x{OH}',
                             '-r', str(FPS), '-i', '-', '-ss', f"{S['start']:.3f}", '-t', f"{S['length']:.3f}",
                             '-i', 'assets/mix.wav', '-map', '0:v', '-map', '1:a',
-                            '-af', f"afade=t=in:st=0:d=0.4,afade=t=out:st={S['length'] - 1.0:.2f}:d=1.0",
-                            '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p',
+                            '-af', f"afade=t=in:st=0:d=0.4,afade=t=out:st={S.get('audio_end', S['length'] - 1.0) - (0.35 if 'audio_end' in S else 0):.2f}:d={0.35 if 'audio_end' in S else 1.0}",
+                            '-c:v', 'libx264', '-preset', 'slow', '-crf', '15', '-pix_fmt', 'yuv420p',
                             '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', S['out']],
                            stdin=subprocess.PIPE)
     for i in range(total):
